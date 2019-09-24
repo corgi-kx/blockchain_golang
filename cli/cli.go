@@ -1,0 +1,152 @@
+package cli
+
+import (
+	"flag"
+	"fmt"
+	"myCode/public_blockchain/part7-network/logcustom"
+	"os"
+)
+
+var (
+	nodeID = ""
+)
+
+type Cli struct {
+}
+
+func printUsage() {
+	fmt.Println("Usage:")
+	fmt.Println("\tgenesis  -a DATA  -v DATA                         生成创世区块")
+	fmt.Println("\tgenerateWallet                                    生成钱包")
+	fmt.Println("\tsetRewardAddr -a DATA                             设置挖矿奖励地址")
+	fmt.Println("\tprintAllAddr                                      查看已生成的所有地址")
+	fmt.Println("\tgetBalance  -a DATA                               查看用户余额")
+	fmt.Println("\ttransfer -from DATA -to DATA -amount DATA         进行转账操作")
+	fmt.Println("\tresetUTXOdb                                       遍历区块数据，重置UTXO数据库")
+	fmt.Println("\tprintAllBlock                                     打印所有区块信息")
+	os.Exit(0)
+}
+
+func isValidArgs() {
+	if len(os.Args) < 2 {
+		printUsage()
+	}
+}
+
+func getNodeID() {
+	id := os.Getenv("NODE_ID")
+	if id == "" {
+		fmt.Println("请设置节点端口号！")
+		os.Exit(1)
+	}
+	nodeID = id
+	log.Debug("NODE_ID:", nodeID)
+
+}
+
+func New() *Cli {
+	return &Cli{}
+}
+
+func (cli *Cli) Run() {
+	isValidArgs()
+	getNodeID()
+	flagGenesisBlockchain := flag.NewFlagSet("genesis", flag.ExitOnError)
+	cmdGenesisBlockchainAddress := flagGenesisBlockchain.String("a", "", "添加创世区块用户地址")
+	cmdGenesisBlockchainValue := flagGenesisBlockchain.Int("v", 0, "添加创世区块金额数量")
+	flagGenerateWallet := flag.NewFlagSet("generateWallet", flag.ExitOnError)
+	flagSetRewardAddress := flag.NewFlagSet("setRewardAddr", flag.ExitOnError)
+	flagStartNode := flag.NewFlagSet("startNode", flag.ExitOnError)
+	cmdSetRewardAddress := flagSetRewardAddress.String("a", "", "设置挖矿奖励地址")
+	flagPrintAllAddress := flag.NewFlagSet("printAllAddr", flag.ExitOnError)
+	flagGetBalance := flag.NewFlagSet("getBalance", flag.ExitOnError)
+	cmdGetBalance := flagGetBalance.String("a", "", "查看用户余额")
+	flagTransfer := flag.NewFlagSet("transfer", flag.ExitOnError)
+	cmdTransferFrom := flagTransfer.String("from", "", "发送转账账户")
+	cmdTransferTo := flagTransfer.String("to", "", "接收转账账户")
+	cmdTransferAmount := flagTransfer.String("amount", "", "转账金额")
+	flagResetUTXODatabase := flag.NewFlagSet("resetUTXOdb", flag.ExitOnError)
+	flagPrintBlock := flag.NewFlagSet("printAllBlock", flag.ExitOnError)
+
+	switch os.Args[1] {
+	case "genesis":
+		err := flagGenesisBlockchain.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "generateWallet":
+		err := flagGenerateWallet.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "setRewardAddr":
+		err := flagSetRewardAddress.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "startNode":
+		err := flagStartNode.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "printAllAddr":
+		err := flagPrintAllAddress.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "getBalance":
+		err := flagGetBalance.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "transfer":
+		err := flagTransfer.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "resetUTXOdb":
+		err := flagResetUTXODatabase.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "printAllBlock":
+		err := flagPrintBlock.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	default:
+		printUsage()
+	}
+
+	if flagGenesisBlockchain.Parsed() {
+		if *cmdGenesisBlockchainAddress == "" || *cmdGenesisBlockchainValue == 0 {
+			printUsage()
+		}
+		cli.genesis(*cmdGenesisBlockchainAddress, *cmdGenesisBlockchainValue)
+	} else if flagGenerateWallet.Parsed() {
+		cli.generateWallet()
+	} else if flagSetRewardAddress.Parsed() {
+		if *cmdSetRewardAddress == "" {
+			printUsage()
+		}
+		cli.setRewardAddress(*cmdSetRewardAddress)
+	} else if flagStartNode.Parsed() {
+		cli.startNode()
+	} else if flagPrintAllAddress.Parsed() {
+		cli.printAllAddress()
+	} else if flagGetBalance.Parsed() {
+		if *cmdGetBalance == "" {
+			printUsage()
+		}
+		cli.getBalance(*cmdGetBalance)
+	} else if flagTransfer.Parsed() {
+		if *cmdTransferFrom == "" || *cmdTransferTo == "" || *cmdTransferAmount == "" {
+			printUsage()
+		}
+		cli.transfer(*cmdTransferFrom, *cmdTransferTo, *cmdTransferAmount)
+	} else if flagResetUTXODatabase.Parsed() {
+		cli.resetUTXODB()
+	} else if flagPrintBlock.Parsed() {
+		cli.printAllBlock()
+	}
+}
