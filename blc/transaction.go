@@ -4,19 +4,20 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
+	"github.com/ethereum/go-ethereum/log"
 	"myCode/public_blockchain/part7-network/util"
 )
 
-type transaction struct {
+type Transaction struct {
 	TxHash []byte
 	//UTXO输入
-	Vint []*txInput
+	Vint []txInput
 	//UTXO输出
-	Vout []*txOutput
+	Vout []txOutput
 }
 
-func (t *transaction) hash() {
-	tBytes := t.serialize()
+func (t *Transaction) hash() {
+	tBytes := t.Serialize()
 	//加入随机数byte
 	randomNumber := util.GenerateRealRandom()
 	randomByte := util.Int64ToBytes(randomNumber)
@@ -25,16 +26,16 @@ func (t *transaction) hash() {
 	t.TxHash = hashByte[:]
 }
 
-func (t *transaction) hashSign() []byte {
+func (t *Transaction) hashSign() []byte {
 	t.TxHash = nil
-	tBytes := t.serialize()
+	tBytes := t.Serialize()
 	//加入随机数byte
 	hashByte := sha256.Sum256(tBytes)
 	return hashByte[:]
 }
 
-// 将Block对象序列化成[]byte
-func (t *transaction) serialize() []byte {
+// 将transaction序列化成[]byte
+func (t *Transaction) Serialize() []byte {
 	var result bytes.Buffer
 	encoder := gob.NewEncoder(&result)
 
@@ -42,23 +43,43 @@ func (t *transaction) serialize() []byte {
 	if err != nil {
 		panic(err)
 	}
-
 	return result.Bytes()
 }
 
-func (t *transaction) customCopy() *transaction {
-	newVin := []*txInput{}
-	newVout := []*txOutput{}
-	for _, vin := range t.Vint {
-		newVin = append(newVin, &txInput{vin.TxHash, vin.Index, nil, nil})
+
+func (t *Transaction) getTransBytes() []byte {
+	if t.TxHash == nil || t.Vint == nil || t.Vout == nil{
+		log.Error("交易信息不完整，无法拼接成字节数组")
+		return nil
 	}
-	for _, vout := range t.Vout {
-		newVout = append(newVout, &txOutput{vout.Value, vout.PublicKeyHash})
+	transBytes:=[]byte{}
+	transBytes = append(transBytes,t.TxHash...)
+	for _,v := range t.Vint {
+		transBytes = append(transBytes,v.TxHash...)
+		transBytes = append(transBytes,util.Int64ToBytes(int64(v.Index))...)
+		transBytes = append(transBytes,v.Signature...)
+		transBytes = append(transBytes,v.PublicKey...)
 	}
-	return &transaction{t.TxHash, newVin, newVout}
+	for _,v := range t.Vout {
+		transBytes = append(transBytes,util.Int64ToBytes(int64(v.Value))...)
+		transBytes = append(transBytes,v.PublicKeyHash...)
+	}
+	return transBytes
 }
 
-func isGenesisTransaction(tss []*transaction) bool {
+func (t *Transaction) customCopy() Transaction {
+	newVin := []txInput{}
+	newVout := []txOutput{}
+	for _, vin := range t.Vint {
+		newVin = append(newVin, txInput{vin.TxHash, vin.Index, nil, nil})
+	}
+	for _, vout := range t.Vout {
+		newVout = append(newVout, txOutput{vout.Value, vout.PublicKeyHash})
+	}
+	return Transaction{t.TxHash, newVin, newVout}
+}
+
+func isGenesisTransaction(tss []Transaction) bool {
 	if tss != nil {
 		if tss[0].Vint[0].Index == -1 {
 			return true

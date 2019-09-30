@@ -11,15 +11,17 @@ import (
 	"math/big"
 	log "myCode/public_blockchain/part7-network/logcustom"
 	"myCode/public_blockchain/part7-network/util"
+	"os"
 )
 
 type bitcoinKeys struct {
 	PrivateKey *ecdsa.PrivateKey
 	PublicKey  []byte
+	MnemonicWord []string
 }
 
 func newBitcoinKeys() *bitcoinKeys {
-	b := &bitcoinKeys{nil, nil}
+	b := &bitcoinKeys{nil, nil,nil}
 	b.newKeyPair()
 	return b
 }
@@ -27,12 +29,76 @@ func newBitcoinKeys() *bitcoinKeys {
 func (b *bitcoinKeys) newKeyPair() {
 	curve := elliptic.P256()
 	var err error
-	b.PrivateKey, err = ecdsa.GenerateKey(curve, rand.Reader)
+	b.MnemonicWord = getChineseMnemonicWord()
+	buf:=bytes.NewReader(b.jointSpeed())
+	b.PrivateKey, err = ecdsa.GenerateKey(curve, buf)
 	if err != nil {
 		log.Panic(err)
 	}
+	//b.PrivateKey, err = ecdsa.GenerateKey(curve, rand.Reader)
+	//if err != nil {
+	//	log.Panic(err)
+	//}
 	b.PublicKey = append(b.PrivateKey.PublicKey.X.Bytes(), b.PrivateKey.PublicKey.Y.Bytes()...)
 }
+
+//将助记词拼接成字节数组，并截取前40位
+func (b bitcoinKeys) jointSpeed() []byte {
+	bs:=make([]byte,0)
+	for _,v:= range b.MnemonicWord {
+		bs = append(bs,[]byte(v)...)
+	}
+	return bs[:40]
+}
+//获取中文种子
+func  getChineseMnemonicWord() []string{
+	file,err:=os.Open("./blc/chinese_mnemonic_world.txt")
+	if err != nil {
+		log.Panic(err)
+	}
+	s:=[]string{}
+	//因为种子最高40个字节，所以就取7对词语，7*2*3 = 42字节，返回后在截取前40位
+	for i := 0;i<7;i++ {
+		n,err:=rand.Int(rand.Reader,big.NewInt(5948))  //词库一共5949对词语，顾此设置随机数最高5948
+		if err != nil {
+			log.Panic(err)
+		}
+		b:=make([]byte,6)
+		_,err=file.ReadAt(b,n.Int64()*7)
+		if err != nil {
+			log.Panic(err)
+		}
+		s=append(s,string(b))
+	}
+	file.Close()
+	return s
+}
+
+
+const privKeyBytesLen = 32
+func (keys *bitcoinKeys) getPrivateKey() string{
+	d := keys.PrivateKey.D.Bytes()
+	b := make([]byte, 0, privKeyBytesLen)
+	priKet := paddedAppend(privKeyBytesLen, b, d)
+
+	return string(util.Base58Encode(priKet))
+}
+
+func paddedAppend(size uint, dst, src []byte) []byte {
+	for i := 0; i < int(size)-len(src); i++ {
+		dst = append(dst, 0)
+	}
+	return append(dst, src...)
+}
+
+//func byteString(b []byte) (s string) {
+//	s = ""
+//	for i := 0; i < len(b); i++ {
+//		//s += fmt.Sprintf("%02X", b[i])
+//		s += fmt.Sprintf("%02X", b[i])
+//	}
+//	return s
+//}
 
 func (b *bitcoinKeys) getAddress() []byte {
 	//1.ripemd160(sha256(publickey))
@@ -60,9 +126,12 @@ func (b *bitcoinKeys) serliazle() []byte {
 	return result.Bytes()
 }
 
+
+
 func generatePublicKeyHash(publicKey []byte) []byte {
 	sha256PubKey := sha256.Sum256(publicKey)
 	r := ripemd160.New()
+	r.Reset()
 	r.Write(sha256PubKey[:])
 	ripPubKey := r.Sum(nil)
 	return ripPubKey

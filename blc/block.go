@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-type block struct {
+type Block struct {
 	//上一个区块的hash
 	PreHash []byte
 	//数据data
-	Transactions []*transaction
+	Transactions []Transaction
 	//时间戳
 	TimeStamp int64
 	//区块高度
@@ -25,27 +25,27 @@ type block struct {
 	Hash []byte
 }
 
-func newBlock(transaction []*transaction, preHash []byte, height int) *block {
+func newBlock(transaction []Transaction, preHash []byte, height int) *Block {
 	timeStamp := time.Now().Unix()
 	//hash数据+时间戳+上一个区块hash
-	block := block{preHash, transaction, timeStamp, height, 0, nil}
-	pow := newProofOfWork(&block)
+	block := Block{preHash, transaction, timeStamp, height, 0, nil}
+	pow := NewProofOfWork(&block)
 	nonce, hash := pow.run()
 	block.Nonce = nonce
 	block.Hash = hash[:]
-	fmt.Println("pow verify : ", pow.verify())
+	fmt.Println("pow verify : ", pow.Verify())
 	fmt.Println("已生成新的区块...")
 	return &block
 }
 
-func newGenesisBlock(transaction []*transaction) *block {
+func newGenesisBlock(transaction []Transaction) *Block {
 	preHash := []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	genesisBlock := newBlock(transaction, preHash, 1)
 	return genesisBlock
 }
 
 // 将Block对象序列化成[]byte
-func (b *block) serialize() []byte {
+func (b *Block) Serialize() []byte {
 	var result bytes.Buffer
 	encoder := gob.NewEncoder(&result)
 
@@ -53,11 +53,10 @@ func (b *block) serialize() []byte {
 	if err != nil {
 		panic(err)
 	}
-
 	return result.Bytes()
 }
 
-func isGenesisBlock(block *block) bool {
+func isGenesisBlock(block *Block) bool {
 	var hashInt big.Int
 	hashInt.SetBytes(block.PreHash)
 	if big.NewInt(0).Cmp(&hashInt) == 0 {
@@ -66,11 +65,11 @@ func isGenesisBlock(block *block) bool {
 	return false
 }
 
-func deserialize(d []byte, i interface{}) interface{} {
+func Deserialize(d []byte, i interface{}) interface{} {
 	var model interface{}
 	switch i.(type) {
-	case *block:
-		model = i.(*block)
+	case *Block:
+		model = i.(*Block)
 	case *addressList:
 		model = i.(*addressList)
 	case *bitcoinKeys:

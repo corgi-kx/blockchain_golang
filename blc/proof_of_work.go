@@ -9,11 +9,11 @@ import (
 )
 
 type proofOfWork struct {
-	Block  *block
+	*Block
 	Target *big.Int
 }
 
-func newProofOfWork(block *block) *proofOfWork {
+func NewProofOfWork(block *Block) *proofOfWork {
 	target := big.NewInt(1)
 	target.Lsh(target, 256-targetBits)
 	pow := &proofOfWork{block, target}
@@ -41,10 +41,9 @@ func (p *proofOfWork) run() (int, []byte) {
 	return nonce, hashByte[:]
 }
 
-func (p *proofOfWork) verify() bool {
+func (p *proofOfWork) Verify() bool {
 	target := big.NewInt(1)
 	target.Lsh(target, 256-targetBits)
-
 	data := p.jointData(p.Block.Nonce)
 	hash := sha256.Sum256(data)
 	var hashInt big.Int
@@ -64,8 +63,8 @@ func (p *proofOfWork) jointData(nonce int) (data []byte) {
 	targetBitsByte := util.Int64ToBytes(int64(targetBits))
 	//拼接成交易数组
 	transData := [][]byte{}
-	for _, trasaction := range p.Block.Transactions {
-		tBytes := trasaction.serialize()
+	for _,v := range p.Block.Transactions {
+		tBytes := v.getTransBytes()   //这里为什么要用到自己写的方法，而不是gob序列化，是因为gob同样的数据序列化后的字节数组有可能不一致，无法用于hash验证
 		transData = append(transData, tBytes)
 	}
 	//获取交易数据的根默克尔节点

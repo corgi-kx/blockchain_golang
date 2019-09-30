@@ -54,7 +54,7 @@ func (u *UTXOHandle) findUTXOFromAddress(address string) []*UTXO {
 	return utxosSlice
 }
 
-func (u *UTXOHandle) synchrodata(tss []*transaction) {
+func (u *UTXOHandle) synchrodata(tss []Transaction) {
 	//先将全部输入插入数据库
 	for _, ts := range tss {
 		utxos := []*UTXO{}

@@ -27,7 +27,7 @@ func NewWallets(bd *database.BlockchainDB) *wallets {
 	if database.IsBucketExist(bd, database.AddrBucket) {
 		addressList := GetAllAddress(bd)
 		for _, v := range *addressList {
-			keys := deserialize(bd.View(v, database.AddrBucket), &bitcoinKeys{})
+			keys := Deserialize(bd.View(v, database.AddrBucket), &bitcoinKeys{})
 			w.Wallets[string(v)] = keys.(*bitcoinKeys)
 		}
 		return w
@@ -35,14 +35,18 @@ func NewWallets(bd *database.BlockchainDB) *wallets {
 	return w
 }
 
-func (w *wallets) GenerateWallet(bd *database.BlockchainDB) string {
+func (w *wallets) GenerateWallet(bd *database.BlockchainDB) (address,privKey,mnemonicWord string) {
 	bitcoinKeys := newBitcoinKeys()
+	privKey =  bitcoinKeys.getPrivateKey()
 	addressByte := bitcoinKeys.getAddress()
 	w.storage(addressByte, bitcoinKeys, bd)
 	//将地址存入实例
-	address := string(addressByte)
-	w.Wallets[address] = bitcoinKeys
-	return address
+	address = string(addressByte)
+	for _,v := range bitcoinKeys.MnemonicWord {
+		mnemonicWord += v + " "
+	}
+	//w.Wallets[address] = bitcoinKeys
+	return
 }
 
 func (w *wallets) storage(address []byte, keys *bitcoinKeys, bd *database.BlockchainDB) {
@@ -54,7 +58,7 @@ func (w *wallets) storage(address []byte, keys *bitcoinKeys, bd *database.Blockc
 		a := addressList{address}
 		bd.Put([]byte(addrListMapping), a.serliazle(), database.AddrBucket)
 	} else {
-		a := deserialize(listBytes, &addressList{})
+		a := Deserialize(listBytes, &addressList{})
 		addressList := a.(*addressList)
 		*addressList = append(*addressList, address)
 		bd.Put([]byte(addrListMapping), addressList.serliazle(), database.AddrBucket)
@@ -64,7 +68,9 @@ func (w *wallets) storage(address []byte, keys *bitcoinKeys, bd *database.Blockc
 //获取全部地址信息
 func GetAllAddress(bd *database.BlockchainDB) *addressList {
 	listBytes := bd.View([]byte(addrListMapping), database.AddrBucket)
-	a := deserialize(listBytes, &addressList{})
+	a := Deserialize(listBytes, &addressList{})
 	addressList := a.(*addressList)
 	return addressList
 }
+
+

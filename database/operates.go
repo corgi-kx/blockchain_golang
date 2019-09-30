@@ -2,9 +2,8 @@ package database
 
 import (
 	"errors"
-	"fmt"
 	"github.com/boltdb/bolt"
-	"log"
+	log "myCode/public_blockchain/part7-network/logcustom"
 )
 
 func (bd *BlockchainDB) Put(k, v []byte, bt BucketType) {
@@ -40,7 +39,7 @@ func (bd *BlockchainDB) View(k []byte, bt BucketType) []byte {
 		return nil
 	})
 	if err != nil {
-		fmt.Println(err)
+		log.Warn(err)
 		return nil
 	}
 	return result

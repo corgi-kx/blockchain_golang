@@ -2,7 +2,7 @@ package database
 
 import (
 	"github.com/boltdb/bolt"
-	"log"
+	log "myCode/public_blockchain/part7-network/logcustom"
 )
 
 // 仓库类型

@@ -2,7 +2,7 @@ package database
 
 import (
 	"github.com/boltdb/bolt"
-	"log"
+	log "myCode/public_blockchain/part7-network/logcustom"
 	"os"
 )
 
@@ -13,7 +13,6 @@ func IsBlotExist(nodeID string) bool {
 		return true
 	}
 	if os.IsNotExist(err) {
-		log.Panic("IsBlotExist err", err)
 		return false
 	}
 	return false
