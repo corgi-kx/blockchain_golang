@@ -1,13 +1,15 @@
 package network
 
 import (
+	block "github.com/corgi-kx/blockchain_golang/blc"
+	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	"github.com/corgi-kx/blockchain_golang/send"
 	"io/ioutil"
-	block "myCode/public_blockchain/part7-network/blc"
-	log "myCode/public_blockchain/part7-network/logcustom"
 	"net"
 )
 
-var knowNode = []string{"localhost:3000"}
+var centerNode = "localhost:3000"
+var knowNodesMap = map[string]string{}
 var localAddr string
 func StartNode(nodeID string) {
 	localAddr = "localhost:" + nodeID
@@ -32,7 +34,7 @@ func StartNode(nodeID string) {
 		}
 	}()
 	//如果不是中心节点则，启动时向中心节点发送版本信息
-	if localAddr != knowNode[0] {
+	if localAddr != centerNode {
 		go func() {
 			log.Tracef("启动挖矿节点%s发送消息...",localAddr)
 			bc:=block.NewBlockchain()
@@ -40,9 +42,12 @@ func StartNode(nodeID string) {
 			bc.BD.Close()
 			v := version{versionInfo, lastHeight, localAddr}
 			versionBytes := v.serialize()
-			sendMessage(jointMessage(cVersion, versionBytes), knowNode[0])
+			send.SendMessage(jointMessage(cVersion, versionBytes), centerNode)
 			log.Trace("挖矿节点已发送完消息...")
 		}()
 	}
 	select {}
 }
+
+
+

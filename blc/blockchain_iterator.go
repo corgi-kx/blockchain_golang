@@ -1,6 +1,6 @@
 package block
 
-import "myCode/public_blockchain/part7-network/database"
+import "github.com/corgi-kx/blockchain_golang/database"
 
 type blockchainIterator struct {
 	CurrentBlockHash []byte

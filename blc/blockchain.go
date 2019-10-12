@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/corgi-kx/blockchain_golang/database"
+	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	"github.com/corgi-kx/blockchain_golang/send"
+
 	"math/big"
-	"myCode/public_blockchain/part7-network/database"
-	log "myCode/public_blockchain/part7-network/logcustom"
+
 	"os"
 	"time"
 )
@@ -292,6 +295,8 @@ func (bc *blockchain) addBlockchain(transaction []Transaction) {
 	//将数据同步到UTXO数据库中
 	u := UTXOHandle{bc}
 	u.synchrodata(transaction)
+	//挖矿出块后 发送高度信息到中心节点
+	send.SendVersionToCenter(nb.Height)
 }
 
 //添加区块信息到数据库，并更新lastHash

@@ -3,7 +3,7 @@ package block
 import (
 	"bytes"
 	"encoding/gob"
-	"myCode/public_blockchain/part7-network/database"
+	"github.com/corgi-kx/blockchain_golang/database"
 )
 
 type addressList [][]byte
@@ -26,6 +26,9 @@ func NewWallets(bd *database.BlockchainDB) *wallets {
 	w := &wallets{make(map[string]*bitcoinKeys)}
 	if database.IsBucketExist(bd, database.AddrBucket) {
 		addressList := GetAllAddress(bd)
+		if addressList == nil {
+			return w
+		}
 		for _, v := range *addressList {
 			keys := Deserialize(bd.View(v, database.AddrBucket), &bitcoinKeys{})
 			w.Wallets[string(v)] = keys.(*bitcoinKeys)
@@ -35,14 +38,14 @@ func NewWallets(bd *database.BlockchainDB) *wallets {
 	return w
 }
 
-func (w *wallets) GenerateWallet(bd *database.BlockchainDB) (address,privKey,mnemonicWord string) {
+func (w *wallets) GenerateWallet(bd *database.BlockchainDB) (address, privKey, mnemonicWord string) {
 	bitcoinKeys := newBitcoinKeys()
-	privKey =  bitcoinKeys.getPrivateKey()
+	privKey = bitcoinKeys.getPrivateKey()
 	addressByte := bitcoinKeys.getAddress()
 	w.storage(addressByte, bitcoinKeys, bd)
 	//将地址存入实例
 	address = string(addressByte)
-	for _,v := range bitcoinKeys.MnemonicWord {
+	for _, v := range bitcoinKeys.MnemonicWord {
 		mnemonicWord += v + " "
 	}
 	//w.Wallets[address] = bitcoinKeys
@@ -68,9 +71,10 @@ func (w *wallets) storage(address []byte, keys *bitcoinKeys, bd *database.Blockc
 //获取全部地址信息
 func GetAllAddress(bd *database.BlockchainDB) *addressList {
 	listBytes := bd.View([]byte(addrListMapping), database.AddrBucket)
+	if listBytes == nil {
+		return nil
+	}
 	a := Deserialize(listBytes, &addressList{})
 	addressList := a.(*addressList)
 	return addressList
 }
-
-

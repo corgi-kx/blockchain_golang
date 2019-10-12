@@ -1,10 +1,10 @@
 package main
 
 import (
-	block "myCode/public_blockchain/part7-network/cli"
+	"github.com/corgi-kx/blockchain_golang/cli"
 )
 
 func main() {
-	cli := block.New()
-	cli.Run()
+	c := cli.New()
+	c.Run()
 }

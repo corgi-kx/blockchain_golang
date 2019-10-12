@@ -3,7 +3,7 @@ package network
 import (
 	"bytes"
 	"encoding/gob"
-	log "myCode/public_blockchain/part7-network/logcustom"
+	log "github.com/corgi-kx/blockchain_golang/logcustom"
 )
 
 type getBlock struct {

@@ -7,10 +7,11 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/gob"
+	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	"github.com/corgi-kx/blockchain_golang/util"
 	"golang.org/x/crypto/ripemd160"
 	"math/big"
-	log "myCode/public_blockchain/part7-network/logcustom"
-	"myCode/public_blockchain/part7-network/util"
+
 	"os"
 )
 
@@ -53,6 +54,7 @@ func (b bitcoinKeys) jointSpeed() []byte {
 //获取中文种子
 func  getChineseMnemonicWord() []string{
 	file,err:=os.Open("./blc/chinese_mnemonic_world.txt")
+	//file,err:=os.Open("D:/programming/golang/GOPATH/src/github.com/corgi-kx/blockchain_golang/blc/chinese_mnemonic_world.txt")
 	if err != nil {
 		log.Panic(err)
 	}
@@ -64,7 +66,7 @@ func  getChineseMnemonicWord() []string{
 			log.Panic(err)
 		}
 		b:=make([]byte,6)
-		_,err=file.ReadAt(b,n.Int64()*7)
+		_,err=file.ReadAt(b,n.Int64()*7+3)   //从文件的具体位置读取 防止乱码
 		if err != nil {
 			log.Panic(err)
 		}

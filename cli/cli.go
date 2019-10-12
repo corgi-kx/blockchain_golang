@@ -3,7 +3,7 @@ package cli
 import (
 	"flag"
 	"fmt"
-	"myCode/public_blockchain/part7-network/logcustom"
+	log "github.com/corgi-kx/blockchain_golang/logcustom"
 	"os"
 )
 

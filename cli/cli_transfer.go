@@ -1,6 +1,6 @@
 package cli
 
-import block "myCode/public_blockchain/part7-network/blc"
+import block "github.com/corgi-kx/blockchain_golang/blc"
 
 func (cli *Cli) transfer(from, to string, amount string) {
 	bc := block.NewBlockchain()

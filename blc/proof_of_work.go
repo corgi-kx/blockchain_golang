@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"fmt"
+	"github.com/corgi-kx/blockchain_golang/util"
 	"math/big"
-	"myCode/public_blockchain/part7-network/util"
+
 )
 
 type proofOfWork struct {

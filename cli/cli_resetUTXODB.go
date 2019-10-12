@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	block "myCode/public_blockchain/part7-network/blc"
+	block "github.com/corgi-kx/blockchain_golang/blc"
 )
 
 func (cli *Cli) resetUTXODB() {

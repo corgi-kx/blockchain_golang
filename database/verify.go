@@ -2,7 +2,7 @@ package database
 
 import (
 	"github.com/boltdb/bolt"
-	log "myCode/public_blockchain/part7-network/logcustom"
+	log "github.com/corgi-kx/blockchain_golang/logcustom"
 	"os"
 )
 

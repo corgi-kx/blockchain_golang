@@ -3,7 +3,8 @@ package block
 import (
 	"crypto/sha256"
 	"fmt"
-	"myCode/public_blockchain/part7-network/util"
+	"github.com/corgi-kx/blockchain_golang/util"
+	"os"
 	"testing"
 	"time"
 )
@@ -33,4 +34,41 @@ func TestSign(t *testing.T) {
 			t.Fatal("\t签名信息验证失败！！！")
 		}
 	}
+}
+
+
+func TestMnemonicWord(t *testing.T) {
+	t.Log("测试中文助记词")
+	{
+		k := newBitcoinKeys()
+		t.Log(k.MnemonicWord)
+		t.Log(k.PrivateKey)
+		t.Log(k.PublicKey)
+	}
+}
+
+func TestReadTxt(t *testing.T) {
+	file,err:=os.Open("D:/programming/golang/GOPATH/src/github.com/corgi-kx/blockchain_golang/blc/chinese_mnemonic_world.txt")
+	if err != nil {
+		t.Error(err)
+	}
+	b:=make([]byte,6)
+	file.ReadAt(b,3)
+	println(string(b))
+	//s:=[]string{}
+	//设置助记词文件为utf-8 一个中文两个字节
+	//因为种子最高40个字节，所以取十对
+	//for i := 0;i<10;i++ {
+	//	n,err:=rand.Int(rand.Reader,big.NewInt(5948))  //词库一共5949对词语，顾此设置随机数最高5948
+	//	if err != nil {
+	//		t.Error(err)
+	//	}
+	//	b:=make([]byte,4)
+	//	_,err=file.ReadAt(b,n.Int64()*5)
+	//	if err != nil && err !=io.EOF {
+	//		t.Error(err)
+	//	}
+	//	s=append(s,string(b))
+	//}
+	file.Close()
 }

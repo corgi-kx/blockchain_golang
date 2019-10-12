@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
+	"github.com/corgi-kx/blockchain_golang/util"
 	"github.com/ethereum/go-ethereum/log"
-	"myCode/public_blockchain/part7-network/util"
+
 )
 
 type Transaction struct {

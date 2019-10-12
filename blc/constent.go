@@ -16,6 +16,9 @@ const rewardAddrMapping = "rewardAddress"
 //最新区块Hash在数据库中的键
 const lastBlockHashMapping = "lastHash"
 
+//挖矿节点最新高度
+const MineNodeLastHeightMapping= "mineNodeLastHeight"
+
 //钱包地址在数据库中的键
 const addrListMapping = "addressList"
 

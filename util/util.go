@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
@@ -11,6 +12,14 @@ func Int64ToBytes(i int64) []byte {
 	var buf = make([]byte, 8)
 	binary.BigEndian.PutUint64(buf, uint64(i))
 	return buf
+}
+
+
+func BytesToInt(bys []byte) int {
+	bytebuff := bytes.NewBuffer(bys)
+	var data int64
+	binary.Read(bytebuff, binary.BigEndian, &data)
+	return int(data)
 }
 
 func GenerateRealRandom() int64 {

@@ -1,4 +1,4 @@
-package network
+package send
 
 import (
 	"bytes"
@@ -6,15 +6,13 @@ import (
 	log "github.com/corgi-kx/blockchain_golang/logcustom"
 )
 
-type hashMap  map[int][]byte
-
-type hash struct {
-	HashMap  hashMap
+type version struct {
+	Version byte
+	Height int
 	AddrFrom string
 }
 
-
-func (v hash) serialize() []byte {
+func (v version) serialize() []byte {
 	var result bytes.Buffer
 	encoder := gob.NewEncoder(&result)
 
@@ -25,7 +23,7 @@ func (v hash) serialize() []byte {
 	return result.Bytes()
 }
 
-func  (v *hash) deserialize(d []byte){
+func  (v *version) deserialize(d []byte){
 	decoder := gob.NewDecoder(bytes.NewReader(d))
 	err := decoder.Decode(v)
 	if err != nil {

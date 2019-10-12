@@ -1,5 +1,10 @@
 package log
 
+//默认是否彩色打印
+var isColor = true
+
+type logType int
+
 //日志等级
 const (
 	Leveltrace logType = iota //基本输出,
@@ -11,14 +16,27 @@ const (
 	Levelfatal                //程序直接结束，打印错误信息后直接调用os.Exit(1)结束程序，不会调用各层defer
 )
 
+type colorType uint8
+
 //日志打印颜色
 const (
-	colorRed colorType = iota + 91
-	colorGreen
-	colorYellow
-	colorBlue
-	colorMagenta  //洋红
-	colorDarkblue //碧蓝
+	colorBlack    colorType = iota + 30
+	colorRed                //红色
+	colorGreen              //绿色
+	colorYellow             //黄色
+	colorBlue               //蓝色
+	colorPurple             //紫色
+	colorDarkblue           //碧蓝
+)
+
+//日志打印颜色
+const (
+	WinColorBlue     colorType = iota + 9 //蓝色
+	WinColorGreen                         //绿色
+	WinColorDarkblue                      //碧蓝
+	WinColorRed                           //红色
+	WinColorPurple                        //紫色
+	WinColorYellow                        //黄色
 )
 
 //日志头部标志
@@ -26,7 +44,7 @@ const (
 	lTrace = "[TRACE]"
 	lInfo  = "[INFO]"
 	lDebug = "[DEBUG]"
-	lWarn  = "[WARNNING]"
+	lWarn  = "[WARN]"
 	lError = "[ERROR]"
 	lPanic = "[PANIC]"
 	lFatal = "[FATAL]"

@@ -5,8 +5,8 @@ import (
 	"crypto/elliptic"
 	"encoding/gob"
 	"fmt"
+	log "github.com/corgi-kx/blockchain_golang/logcustom"
 	"math/big"
-	log "myCode/public_blockchain/part7-network/logcustom"
 	"time"
 )
 

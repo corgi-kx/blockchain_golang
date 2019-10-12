@@ -5,8 +5,8 @@ import (
 	"encoding/gob"
 	"errors"
 	"github.com/boltdb/bolt"
-	"myCode/public_blockchain/part7-network/database"
-	log "myCode/public_blockchain/part7-network/logcustom"
+	"github.com/corgi-kx/blockchain_golang/database"
+	log "github.com/corgi-kx/blockchain_golang/logcustom"
 )
 
 type UTXOHandle struct {
