@@ -7,7 +7,7 @@ type blockchainIterator struct {
 	BD               *database.BlockchainDB
 }
 func  NewBlockchainIterator(bc *blockchain) *blockchainIterator {
-	blockchainIterator := &blockchainIterator{bc.BD.View([]byte(lastBlockHashMapping), database.BlockBucket), bc.BD}
+	blockchainIterator := &blockchainIterator{bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket), bc.BD}
 	return blockchainIterator
 }
 

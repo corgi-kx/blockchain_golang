@@ -21,8 +21,27 @@ type bitcoinKeys struct {
 	MnemonicWord []string
 }
 
-func newBitcoinKeys() *bitcoinKeys {
+func NewBitcoinKeys(nothing []string) *bitcoinKeys {
 	b := &bitcoinKeys{nil, nil,nil}
+	b.MnemonicWord = getChineseMnemonicWord()
+	b.newKeyPair()
+	return b
+}
+
+func CreateBitcoinKeysByMnemonicWord(mnemonicWord []string) *bitcoinKeys {
+	if len(mnemonicWord) != 7 {
+		log.Error("助记词格式不正确，应为七对中文双字词语")
+		return nil
+	}
+	for _,v:=range mnemonicWord {
+		if len(v) != 6 {
+			log.Error("助记词格式不正确，应为七对中文双字词语")
+			return nil
+		}
+	}
+
+	b := &bitcoinKeys{nil, nil,nil}
+	b.MnemonicWord = mnemonicWord
 	b.newKeyPair()
 	return b
 }
@@ -30,7 +49,6 @@ func newBitcoinKeys() *bitcoinKeys {
 func (b *bitcoinKeys) newKeyPair() {
 	curve := elliptic.P256()
 	var err error
-	b.MnemonicWord = getChineseMnemonicWord()
 	buf:=bytes.NewReader(b.jointSpeed())
 	b.PrivateKey, err = ecdsa.GenerateKey(curve, buf)
 	if err != nil {
@@ -78,7 +96,7 @@ func  getChineseMnemonicWord() []string{
 
 
 const privKeyBytesLen = 32
-func (keys *bitcoinKeys) getPrivateKey() string{
+func (keys *bitcoinKeys) GetPrivateKey() string{
 	d := keys.PrivateKey.D.Bytes()
 	b := make([]byte, 0, privKeyBytesLen)
 	priKet := paddedAppend(privKeyBytesLen, b, d)
@@ -128,8 +146,6 @@ func (b *bitcoinKeys) serliazle() []byte {
 	return result.Bytes()
 }
 
-
-
 func generatePublicKeyHash(publicKey []byte) []byte {
 	sha256PubKey := sha256.Sum256(publicKey)
 	r := ripemd160.New()
@@ -153,7 +169,7 @@ func checkSumHash(versionPublickeyHash []byte) []byte {
 	return tailHash
 }
 
-func isVaildBitcoinAddress(address string) bool {
+func IsVaildBitcoinAddress(address string) bool {
 	adddressByte := []byte(address)
 	fullHash := util.Base58Decode(adddressByte)
 	if len(fullHash) != 25 {
@@ -167,6 +183,11 @@ func isVaildBitcoinAddress(address string) bool {
 	} else {
 		return false
 	}
+}
+
+func GetAddressFromPublicKey (publickey []byte) string{
+	b:=bitcoinKeys{PublicKey:publickey}
+	return string(b.getAddress())
 }
 
 func ellipticCurveSign(privKey *ecdsa.PrivateKey, hash []byte) []byte {

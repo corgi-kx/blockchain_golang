@@ -11,8 +11,8 @@ func Trace(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = joint(lTrace, s, WinColorGreen)
-	defer winKernelColse()
 	trace.Println(message)
+	winKernelColse()
 }
 
 //Trace级别的打印信息，第一个参数输入格式,第二个参数输入要打印的内容，类似fmt.Printf
@@ -22,6 +22,7 @@ func Tracef(format string, v ...interface{}) {
 	var message string
 	message = joint(lTrace, s, WinColorGreen)
 	trace.Println(message)
+	winKernelColse()
 }
 
 //Info级别的打印信息，输入要打印的内容，会自动换行
@@ -30,8 +31,8 @@ func Info(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = joint(lInfo, s, WinColorBlue)
-	defer winKernelColse()
 	info.Println(message)
+	winKernelColse()
 }
 
 //Infof级别的打印信息，第一个参数输入格式,第二个参数输入要打印的内容，类似fmt.Printf
@@ -40,8 +41,8 @@ func Infof(format string, v ...interface{}) {
 	s := fmt.Sprintf(format, v...)
 	var message string
 	message = joint(lInfo, s, WinColorBlue)
-	defer winKernelColse()
 	info.Println(message)
+	winKernelColse()
 }
 
 //Debug级别的打印信息，输入要打印的内容，会自动换行
@@ -50,8 +51,8 @@ func Debug(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = joint(lDebug, s, WinColorDarkblue)
-	defer winKernelColse()
 	debug.Println(message)
+	winKernelColse()
 }
 
 //Debug级别的打印信息，第一个参数输入格式,第二个参数输入要打印的内容，类似fmt.Printf
@@ -60,8 +61,8 @@ func Debugf(format string, v ...interface{}) {
 	s := fmt.Sprintf(format, v...)
 	var message string
 	message = joint(lDebug, s, WinColorDarkblue)
-	defer winKernelColse()
 	debug.Println(message)
+	winKernelColse()
 }
 
 //Warn级别的打印信息，输入要打印的内容，会自动换行
@@ -70,8 +71,8 @@ func Warn(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = joint(lWarn, s, WinColorYellow)
-	defer winKernelColse()
 	warn.Println(message)
+	winKernelColse()
 }
 
 //Warn级别的打印信息，第一个参数输入格式,第二个参数输入要打印的内容，类似fmt.Printf
@@ -80,8 +81,8 @@ func Warnf(format string, v ...interface{}) {
 	s := fmt.Sprintf(format, v...)
 	var message string
 	message = joint(lWarn, s, WinColorYellow)
-	defer winKernelColse()
 	warn.Println(message)
+	winKernelColse()
 }
 
 //Error级别的打印信息，输入要打印的内容，会自动换行
@@ -90,8 +91,8 @@ func Error(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = joint(lError, s, WinColorRed)
-	defer winKernelColse()
 	e.Println(message)
+	winKernelColse()
 }
 
 //Errorf级别的打印信息，第一个参数输入格式,第二个参数输入要打印的内容，类似fmt.Printf
@@ -100,8 +101,8 @@ func Errorf(format string, v ...interface{}) {
 	s := fmt.Sprintf(format, v...)
 	var message string
 	message = joint(lError, s, WinColorRed)
-	defer winKernelColse()
 	e.Println(message)
+	winKernelColse()
 }
 
 //Panic级别的打印信息，输入要打印的内容，会自动换行
@@ -111,8 +112,8 @@ func Panic(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = joint(lPanic, s, WinColorPurple)
-	defer winKernelColse()
 	p.Panicln(message)
+	winKernelColse()
 }
 
 //Panicf级别的打印信息，第一个参数输入格式,第二个参数输入要打印的内容
@@ -122,8 +123,8 @@ func Panicf(format string, v ...interface{}) {
 	s := fmt.Sprintf(format, v...)
 	var message string
 	message = joint(lPanic, s, WinColorPurple)
-	defer winKernelColse()
 	p.Panicln(message)
+	winKernelColse()
 }
 
 //Fatal级别的打印信息，输入要打印的内容，会自动换行
@@ -155,8 +156,8 @@ func (l mylog) Trace(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lTrace, s, WinColorGreen)
-	defer winKernelColse()
 	trace.Println(message)
+	winKernelColse()
 }
 
 func (l mylog) Tracef(format string, v ...interface{}) {
@@ -173,8 +174,8 @@ func (l mylog) Info(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lInfo, s, WinColorBlue)
-	defer winKernelColse()
 	info.Println(message)
+	winKernelColse()
 }
 
 func (l mylog) Infof(format string, v ...interface{}) {
@@ -182,8 +183,8 @@ func (l mylog) Infof(format string, v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lInfo, s, WinColorBlue)
-	defer winKernelColse()
 	info.Println(message)
+	winKernelColse()
 }
 
 func (l mylog) Debug(v ...interface{}) {
@@ -191,8 +192,8 @@ func (l mylog) Debug(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lDebug, s, WinColorDarkblue)
-	defer winKernelColse()
 	debug.Println(message)
+	winKernelColse()
 }
 
 func (l mylog) Debugf(format string, v ...interface{}) {
@@ -200,8 +201,8 @@ func (l mylog) Debugf(format string, v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lDebug, s, WinColorDarkblue)
-	defer winKernelColse()
 	debug.Println(message)
+	winKernelColse()
 }
 
 func (l mylog) Warn(v ...interface{}) {
@@ -209,8 +210,8 @@ func (l mylog) Warn(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lWarn, s, WinColorYellow)
-	defer winKernelColse()
 	warn.Println(message)
+	winKernelColse()
 }
 
 func (l mylog) Warnf(format string, v ...interface{}) {
@@ -218,8 +219,8 @@ func (l mylog) Warnf(format string, v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lWarn, s, WinColorYellow)
-	defer winKernelColse()
 	warn.Println(message)
+	winKernelColse()
 }
 
 func (l mylog) Error(v ...interface{}) {
@@ -227,8 +228,8 @@ func (l mylog) Error(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lError, s, WinColorRed)
-	defer winKernelColse()
 	e.Println(message)
+	winKernelColse()
 }
 
 func (l mylog) Errorf(format string, v ...interface{}) {
@@ -236,8 +237,8 @@ func (l mylog) Errorf(format string, v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lError, s, WinColorRed)
-	defer winKernelColse()
 	e.Println(message)
+	winKernelColse()
 }
 
 func (l mylog) Panic(v ...interface{}) {
@@ -245,8 +246,8 @@ func (l mylog) Panic(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lPanic, s, WinColorPurple)
-	defer winKernelColse()
 	p.Panicln(message)
+	winKernelColse()
 }
 
 func (l mylog) Panicf(format string, v ...interface{}) {
@@ -254,8 +255,8 @@ func (l mylog) Panicf(format string, v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lPanic, s, WinColorPurple)
-	defer winKernelColse()
 	p.Panicln(message)
+	winKernelColse()
 }
 
 func (l mylog) Fatal(v ...interface{}) {

@@ -10,6 +10,9 @@ import (
 	"time"
 )
 
+//当前网络中，区块最新高度
+var NewestBlockHeight int
+
 type Block struct {
 	//上一个区块的hash
 	PreHash []byte
@@ -25,22 +28,29 @@ type Block struct {
 	Hash []byte
 }
 
-func newBlock(transaction []Transaction, preHash []byte, height int) *Block {
+func newBlock(transaction []Transaction, preHash []byte, height int) (*Block,error) {
 	timeStamp := time.Now().Unix()
 	//hash数据+时间戳+上一个区块hash
 	block := Block{preHash, transaction, timeStamp, height, 0, nil}
 	pow := NewProofOfWork(&block)
-	nonce, hash := pow.run()
+	nonce, hash,err := pow.run()
+	fmt.Println("")
+	if err != nil {
+		return 	nil,err
+	}
 	block.Nonce = nonce
 	block.Hash = hash[:]
 	fmt.Println("pow verify : ", pow.Verify())
-	fmt.Println("已生成新的区块...")
-	return &block
+	fmt.Println("已生成新的区块")
+	return &block,nil
 }
 
 func newGenesisBlock(transaction []Transaction) *Block {
 	preHash := []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	genesisBlock := newBlock(transaction, preHash, 1)
+	genesisBlock,err:= newBlock(transaction, preHash, 1)
+	if err != nil {
+		log.Error(err)
+	}
 	return genesisBlock
 }
 

@@ -11,10 +11,10 @@ var nodeID = os.Getenv("NODE_ID") //节点id
 const tokenRewardNum = 25
 
 //奖励地址在数据库中的键
-const rewardAddrMapping = "rewardAddress"
+const RewardAddrMapping = "rewardAddress"
 
 //最新区块Hash在数据库中的键
-const lastBlockHashMapping = "lastHash"
+const LastBlockHashMapping = "lastHash"
 
 //挖矿节点最新高度
 const MineNodeLastHeightMapping= "mineNodeLastHeight"
@@ -29,7 +29,7 @@ const version = byte(0x00)
 const checkSum = 4
 
 //挖矿难度值
-const targetBits = 15
+const targetBits = 21
 
 //随机数不能超过的最大值
 const maxInt = math.MaxInt64

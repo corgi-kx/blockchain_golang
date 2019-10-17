@@ -17,9 +17,9 @@ var centerNode = "localhost:3000"
 	中心节点向已知节点发送高度信息
 	其他节点向中心节点发送高度信息
 */
-func SendVersionToCenter(lastHeight int) {
-	nodeID := os.Getenv("NODE_ID")
-	localAddr := "localhost:" + nodeID
+var nodeID = os.Getenv("NODE_ID")
+var localAddr = "localhost:" + nodeID
+func SendVersionToCenterNode(lastHeight int) {
 		newV:=version{versionInfo,lastHeight,localAddr}
 		data:=jointMessage(cVersion,newV.serialize())
 		SendMessage(data,centerNode)
@@ -36,6 +36,16 @@ func SendVersionToKnows(lastHeight int,knowNodesMap map[string]string) {
 			log.Debugf("中心节点已向%s节点发送高度信息\n",k)
 		}
 	}
+}
+
+//像中心节点发送交易信息
+func SendTransToCenterNode(tss Transactions) {
+	for i,_:=range tss.Ts {
+		tss.Ts[i].AddrFrom = localAddr
+	}
+	log.Tracef("已发送%d笔交易到中心节点",len(tss.Ts))
+	data:=jointMessage(cTransaction,tss.Serialize())
+	SendMessage(data,centerNode)
 }
 func SendMessage(data []byte, addr string) {
 	conn, err := net.Dial("tcp", addr)

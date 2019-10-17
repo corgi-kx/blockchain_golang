@@ -12,17 +12,17 @@ import (
 func TestGetBitcoinKeys(t *testing.T) {
 	t.Log("测试获取比特币公私钥，并生成地址")
 	{
-		keys := newBitcoinKeys()
+		keys := NewBitcoinKeys([]string{})
 		address := keys.getAddress()
 		t.Log("\t地址为：",string(address))
-		t.Log("\t地址格式是否正确：",isVaildBitcoinAddress(string(address)))
+		t.Log("\t地址格式是否正确：",IsVaildBitcoinAddress(string(address)))
 	}
 }
 
 func TestSign(t *testing.T) {
 	t.Log("测试数字签名是否可用")
 	{
-		bk := newBitcoinKeys()
+		bk := NewBitcoinKeys([]string{})
 		hash := sha256.Sum256(util.Int64ToBytes(time.Now().UnixNano()))
 		fmt.Printf("\t签名hash:%x\n签名hash长度:%d\n", hash, len(hash))
 		signature := ellipticCurveSign(bk.PrivateKey, hash[:])
@@ -40,7 +40,7 @@ func TestSign(t *testing.T) {
 func TestMnemonicWord(t *testing.T) {
 	t.Log("测试中文助记词")
 	{
-		k := newBitcoinKeys()
+		k := NewBitcoinKeys([]string{})
 		t.Log(k.MnemonicWord)
 		t.Log(k.PrivateKey)
 		t.Log(k.PublicKey)

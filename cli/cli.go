@@ -19,7 +19,9 @@ func printUsage() {
 	fmt.Println("\tgenesis  -a DATA  -v DATA                         生成创世区块")
 	fmt.Println("\tgenerateWallet                                    生成钱包")
 	fmt.Println("\tsetRewardAddr -a DATA                             设置挖矿奖励地址")
-	fmt.Println("\tprintAllAddr                                      查看已生成的所有地址")
+	fmt.Println("\tibMnemonicword -m                                   根据助记词导入钱包")
+	fmt.Println("\tprintAllAddr                                      查看本地存在的地址信息")
+	fmt.Println("\tprintAllWallets                                   查看本地存在的钱包信息")
 	fmt.Println("\tgetBalance  -a DATA                               查看用户余额")
 	fmt.Println("\ttransfer -from DATA -to DATA -amount DATA         进行转账操作")
 	fmt.Println("\tresetUTXOdb                                       遍历区块数据，重置UTXO数据库")
@@ -58,7 +60,10 @@ func (cli *Cli) Run() {
 	flagSetRewardAddress := flag.NewFlagSet("setRewardAddr", flag.ExitOnError)
 	flagStartNode := flag.NewFlagSet("startNode", flag.ExitOnError)
 	cmdSetRewardAddress := flagSetRewardAddress.String("a", "", "设置挖矿奖励地址")
+	flagImportWalletByMnemonicword := flag.NewFlagSet("ibMnemonicword", flag.ExitOnError)
+	cmdMnemonicword := flagImportWalletByMnemonicword.String("m", "", "助记词信息")
 	flagPrintAllAddress := flag.NewFlagSet("printAllAddr", flag.ExitOnError)
+	flagPrintAllWallets := flag.NewFlagSet("printAllWallets", flag.ExitOnError)
 	flagGetBalance := flag.NewFlagSet("getBalance", flag.ExitOnError)
 	cmdGetBalance := flagGetBalance.String("a", "", "查看用户余额")
 	flagTransfer := flag.NewFlagSet("transfer", flag.ExitOnError)
@@ -89,8 +94,18 @@ func (cli *Cli) Run() {
 		if err != nil {
 			log.Panic(err)
 		}
+	case "ibMnemonicword":
+		err := flagImportWalletByMnemonicword.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
 	case "printAllAddr":
 		err := flagPrintAllAddress.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "printAllWallets":
+		err := flagPrintAllWallets.Parse(os.Args[2:])
 		if err != nil {
 			log.Panic(err)
 		}
@@ -132,9 +147,16 @@ func (cli *Cli) Run() {
 		cli.setRewardAddress(*cmdSetRewardAddress)
 	} else if flagStartNode.Parsed() {
 		cli.startNode()
-	} else if flagPrintAllAddress.Parsed() {
+	} else if flagImportWalletByMnemonicword.Parsed() {
+		if *cmdMnemonicword == "" {
+			printUsage()
+		}
+		cli.importWalletByMnemonicword(*cmdMnemonicword)
+	}else if flagPrintAllAddress.Parsed() {
 		cli.printAllAddress()
-	} else if flagGetBalance.Parsed() {
+	}  else if flagPrintAllWallets.Parsed() {
+		cli.printAllWallets()
+	}else if flagGetBalance.Parsed() {
 		if *cmdGetBalance == "" {
 			printUsage()
 		}

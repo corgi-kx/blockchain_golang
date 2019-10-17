@@ -90,6 +90,7 @@ func TestLogMultithread(t *testing.T) {
 	}
 }
 
+
 func TestMapVSArray(t *testing.T) {
 	t.Log("测试字典与切片，使用哪个性能更好")
 	count := 1000000

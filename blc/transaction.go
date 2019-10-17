@@ -27,11 +27,20 @@ func (t *Transaction) hash() {
 	t.TxHash = hashByte[:]
 }
 
+//作为数字签名的hash方法，为什么不用gob序列化后hash，因为涉及到tcp传输gob直接序列化有问题，所以单独拼接成byte数组再hash
 func (t *Transaction) hashSign() []byte {
 	t.TxHash = nil
-	tBytes := t.Serialize()
-	//加入随机数byte
-	hashByte := sha256.Sum256(tBytes)
+	nHash:=[]byte{}
+	for _,v:=range t.Vint {
+		nHash=append(nHash,v.TxHash...)
+		nHash=append(nHash,v.PublicKey...)
+		nHash=append(nHash,util.Int64ToBytes(int64(v.Index))...)
+	}
+	for _,v:=range t.Vout {
+		nHash=append(nHash,v.PublicKeyHash...)
+		nHash=append(nHash,util.Int64ToBytes(int64(v.Value))...)
+	}
+	hashByte := sha256.Sum256(nHash)
 	return hashByte[:]
 }
 

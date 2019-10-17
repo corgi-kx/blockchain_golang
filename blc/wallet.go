@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"github.com/corgi-kx/blockchain_golang/database"
+	log "github.com/corgi-kx/logcustom"
 )
 
 type addressList [][]byte
@@ -38,9 +39,12 @@ func NewWallets(bd *database.BlockchainDB) *wallets {
 	return w
 }
 
-func (w *wallets) GenerateWallet(bd *database.BlockchainDB) (address, privKey, mnemonicWord string) {
-	bitcoinKeys := newBitcoinKeys()
-	privKey = bitcoinKeys.getPrivateKey()
+func (w *wallets) GenerateWallet(bd *database.BlockchainDB,keys func([]string) *bitcoinKeys,s []string) (address, privKey, mnemonicWord string) {
+	bitcoinKeys := keys(s)
+	if bitcoinKeys == nil {
+		log.Fatal("创建钱包失败，检查助记词是否符合创建规则！")
+	}
+	privKey = bitcoinKeys.GetPrivateKey()
 	addressByte := bitcoinKeys.getAddress()
 	w.storage(addressByte, bitcoinKeys, bd)
 	//将地址存入实例
@@ -53,6 +57,11 @@ func (w *wallets) GenerateWallet(bd *database.BlockchainDB) (address, privKey, m
 }
 
 func (w *wallets) storage(address []byte, keys *bitcoinKeys, bd *database.BlockchainDB) {
+	b:=bd.View(address, database.AddrBucket)
+	if b != nil {
+		log.Warn("钱包早已存在于数据库中！")
+		return
+	}
 	//将公私钥以地址为键 存入数据库
 	bd.Put(address, keys.serliazle(), database.AddrBucket)
 	//将地址存入地址导航
@@ -78,3 +87,5 @@ func GetAllAddress(bd *database.BlockchainDB) *addressList {
 	addressList := a.(*addressList)
 	return addressList
 }
+
+

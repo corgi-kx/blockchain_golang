@@ -1,7 +1,7 @@
 package network
 
 import (
-	block "github.com/corgi-kx/blockchain_golang/blc"
+	blc "github.com/corgi-kx/blockchain_golang/blc"
 	log "github.com/corgi-kx/blockchain_golang/logcustom"
 	"github.com/corgi-kx/blockchain_golang/send"
 	"io/ioutil"
@@ -11,6 +11,7 @@ import (
 var centerNode = "localhost:3000"
 var knowNodesMap = map[string]string{}
 var localAddr string
+var tradePool  =send.Transactions{}
 func StartNode(nodeID string) {
 	localAddr = "localhost:" + nodeID
 	listen, err := net.Listen("tcp", localAddr)
@@ -29,7 +30,6 @@ func StartNode(nodeID string) {
 			if err != nil {
 				log.Panic(err)
 			}
-			log.Debugf("接收到来自%s的信息:", conn.RemoteAddr())
 			dataHandle(b)
 		}
 	}()
@@ -37,8 +37,9 @@ func StartNode(nodeID string) {
 	if localAddr != centerNode {
 		go func() {
 			log.Tracef("启动挖矿节点%s发送消息...",localAddr)
-			bc:=block.NewBlockchain()
+			bc:=blc.NewBlockchain()
 			lastHeight := bc.GetLastBlockHeight()
+			blc.NewestBlockHeight = lastHeight
 			bc.BD.Close()
 			v := version{versionInfo, lastHeight, localAddr}
 			versionBytes := v.serialize()

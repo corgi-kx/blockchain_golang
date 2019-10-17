@@ -10,10 +10,8 @@ func (cli *Cli) generateWallet() {
 	bd := database.New(nodeID)
 	defer bd.Close()
 	wallets := block.NewWallets(bd)
-	address,privkey,mnemonicWord := wallets.GenerateWallet(bd)
+	address,privkey,mnemonicWord := wallets.GenerateWallet(bd,block.NewBitcoinKeys,[]string{})
 	fmt.Println("助记词：",mnemonicWord)
 	fmt.Println("私钥：", privkey)
 	fmt.Println("地址：", address)
-
-
 }

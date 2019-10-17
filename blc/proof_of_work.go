@@ -3,10 +3,10 @@ package block
 import (
 	"bytes"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"github.com/corgi-kx/blockchain_golang/util"
 	"math/big"
-
 )
 
 type proofOfWork struct {
@@ -21,12 +21,16 @@ func NewProofOfWork(block *Block) *proofOfWork {
 	return pow
 }
 
-func (p *proofOfWork) run() (int, []byte) {
+func (p *proofOfWork) run() (int,[]byte,error) {
 	nonce := 0
 	var hashByte [32]byte
 	var hashInt big.Int
 	fmt.Println("Mining the block  ....")
 	for nonce < maxInt {
+		//检测网络上其他节点是否已经挖出了区块
+		if p.Height <= NewestBlockHeight {
+			return 0,nil,errors.New("检测到当前节点已接收到最新区块，所以终止此块的挖矿操作")
+		}
 		data := p.jointData(nonce)
 		hashByte = sha256.Sum256(data)
 		fmt.Printf("\r current hash : %x", hashByte)
@@ -38,8 +42,7 @@ func (p *proofOfWork) run() (int, []byte) {
 			nonce++
 		}
 	}
-	fmt.Println("")
-	return nonce, hashByte[:]
+	return nonce, hashByte[:],nil
 }
 
 func (p *proofOfWork) Verify() bool {
