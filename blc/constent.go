@@ -5,6 +5,9 @@ import (
 	"os"
 )
 
+//当前网络中，区块最新高度
+var NewestBlockHeight int
+
 var nodeID = os.Getenv("NODE_ID") //节点id
 
 //挖矿奖励代币数量

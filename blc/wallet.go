@@ -19,20 +19,29 @@ func (a *addressList) serliazle() []byte {
 	return result.Bytes()
 }
 
+func  (v *addressList) Deserialize(d []byte){
+	decoder := gob.NewDecoder(bytes.NewReader(d))
+	err := decoder.Decode(v)
+	if err != nil {
+		log.Panic(err)
+	}
+}
 type wallets struct {
 	Wallets map[string]*bitcoinKeys
 }
 
 func NewWallets(bd *database.BlockchainDB) *wallets {
 	w := &wallets{make(map[string]*bitcoinKeys)}
+	//如果钱包表存在，则先取出所有地址信息，在根据地址取出钱包信息
 	if database.IsBucketExist(bd, database.AddrBucket) {
 		addressList := GetAllAddress(bd)
 		if addressList == nil {
 			return w
 		}
 		for _, v := range *addressList {
-			keys := Deserialize(bd.View(v, database.AddrBucket), &bitcoinKeys{})
-			w.Wallets[string(v)] = keys.(*bitcoinKeys)
+			keys:=bitcoinKeys{}
+			keys.Deserialize(bd.View(v, database.AddrBucket))
+			w.Wallets[string(v)] = &keys
 		}
 		return w
 	}
@@ -58,21 +67,22 @@ func (w *wallets) GenerateWallet(bd *database.BlockchainDB,keys func([]string) *
 
 func (w *wallets) storage(address []byte, keys *bitcoinKeys, bd *database.BlockchainDB) {
 	b:=bd.View(address, database.AddrBucket)
-	if b != nil {
+	if len(b) != 0 {
 		log.Warn("钱包早已存在于数据库中！")
 		return
 	}
 	//将公私钥以地址为键 存入数据库
 	bd.Put(address, keys.serliazle(), database.AddrBucket)
+
 	//将地址存入地址导航
 	listBytes := bd.View([]byte(addrListMapping), database.AddrBucket)
-	if listBytes == nil {
+	if len(listBytes) == 0 {
 		a := addressList{address}
 		bd.Put([]byte(addrListMapping), a.serliazle(), database.AddrBucket)
 	} else {
-		a := Deserialize(listBytes, &addressList{})
-		addressList := a.(*addressList)
-		*addressList = append(*addressList, address)
+		addressList:=addressList{}
+		addressList.Deserialize(listBytes)
+		addressList = append(addressList, address)
 		bd.Put([]byte(addrListMapping), addressList.serliazle(), database.AddrBucket)
 	}
 }
@@ -80,12 +90,12 @@ func (w *wallets) storage(address []byte, keys *bitcoinKeys, bd *database.Blockc
 //获取全部地址信息
 func GetAllAddress(bd *database.BlockchainDB) *addressList {
 	listBytes := bd.View([]byte(addrListMapping), database.AddrBucket)
-	if listBytes == nil {
+	if len(listBytes) == 0 {
 		return nil
 	}
-	a := Deserialize(listBytes, &addressList{})
-	addressList := a.(*addressList)
-	return addressList
+	addressList:=addressList{}
+	addressList.Deserialize(listBytes)
+	return &addressList
 }
 
 

@@ -16,7 +16,6 @@ func  (cli *Cli)importWalletByMnemonicword(j string){
 	}
 
 	bd := database.New(nodeID)
-	defer bd.Close()
 	wallets := block.NewWallets(bd)
 	address,privkey,mnemonicWord := wallets.GenerateWallet(bd,block.CreateBitcoinKeysByMnemonicWord,mnemonicwords)
 	fmt.Println("助记词：",mnemonicWord)

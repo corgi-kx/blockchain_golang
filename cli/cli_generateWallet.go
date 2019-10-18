@@ -8,7 +8,6 @@ import (
 
 func (cli *Cli) generateWallet() {
 	bd := database.New(nodeID)
-	defer bd.Close()
 	wallets := block.NewWallets(bd)
 	address,privkey,mnemonicWord := wallets.GenerateWallet(bd,block.NewBitcoinKeys,[]string{})
 	fmt.Println("助记词：",mnemonicWord)

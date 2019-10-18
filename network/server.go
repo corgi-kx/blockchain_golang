@@ -30,7 +30,7 @@ func StartNode(nodeID string) {
 			if err != nil {
 				log.Panic(err)
 			}
-			dataHandle(b)
+			go dataHandle(b)
 		}
 	}()
 	//如果不是中心节点则，启动时向中心节点发送版本信息
@@ -40,7 +40,6 @@ func StartNode(nodeID string) {
 			bc:=blc.NewBlockchain()
 			lastHeight := bc.GetLastBlockHeight()
 			blc.NewestBlockHeight = lastHeight
-			bc.BD.Close()
 			v := version{versionInfo, lastHeight, localAddr}
 			versionBytes := v.serialize()
 			send.SendMessage(jointMessage(cVersion, versionBytes), centerNode)

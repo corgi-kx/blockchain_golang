@@ -31,7 +31,14 @@ func (u *UTXOHandle) findUTXOFromAddress(address string) []*UTXO {
 	publicKeyHash := getPublicKeyHashFromAddress(address)
 	utxosSlice := []*UTXO{}
 	//获取bolt迭代器，遍历整个UTXO数据库
-	err := u.BC.BD.DB.View(func(tx *bolt.Tx) error {
+	//打开数据库
+	var DBFileName = "blockchain_" + nodeID + ".db"
+	db, err := bolt.Open(DBFileName, 0600, nil)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	err = db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte(database.UTXOBucket))
 		if b == nil {
@@ -50,6 +57,11 @@ func (u *UTXOHandle) findUTXOFromAddress(address string) []*UTXO {
 	})
 	if err != nil {
 		log.Panic(err)
+	}
+	//关闭数据库
+	err = db.Close()
+	if err != nil {
+		log.Panic("db close err :", err)
 	}
 	return utxosSlice
 }
@@ -70,7 +82,7 @@ func (u *UTXOHandle) Synchrodata(tss []Transaction) {
 			publicKeyHash := generatePublicKeyHash(vIn.PublicKey)
 			//获取bolt迭代器，遍历整个UTXO数据库
 			utxoByte := u.BC.BD.View(vIn.TxHash, database.UTXOBucket)
-			if utxoByte == nil {
+			if len(utxoByte) == 0 {
 				log.Panic("Synchrodata err : do not find utxo")
 			}
 			utxos := u.dserialize(utxoByte)

@@ -13,11 +13,11 @@ func  NewBlockchainIterator(bc *blockchain) *blockchainIterator {
 
 func (bi *blockchainIterator) Next() *Block {
 	currentByte := bi.BD.View(bi.CurrentBlockHash, database.BlockBucket)
-	if currentByte == nil {
+	if len(currentByte) == 0 {
 		return nil
 	}
-	b := Deserialize(currentByte, &Block{})
-	block := b.(*Block)
+	block:=Block{}
+	block.Deserialize(currentByte)
 	bi.CurrentBlockHash = block.PreHash
-	return block
+	return &block
 }

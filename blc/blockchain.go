@@ -13,9 +13,7 @@ import (
 	"os"
 	"time"
 )
-func init() {
-	log.SetOutputAll(os.Stdout)
-}
+
 type blockchain struct {
 	BD *database.BlockchainDB
 }
@@ -38,10 +36,11 @@ func (bc *blockchain) CreataGenesisTransaction(address string, value int) {
 	//创世区块数据
 	txi := txInput{[]byte{}, -1, nil, nil}
 	wallets := NewWallets(bc.BD)
-	genesisKeys := wallets.Wallets[address]
-	if genesisKeys == nil {
+	genesisKeys, ok := wallets.Wallets[address]
+	if !ok {
 		log.Fatal("没有找到地址对应的公钥信息")
 	}
+
 	//通过地址获取rip160(sha256(publickey))
 	publicKeyHash := generatePublicKeyHash(genesisKeys.PublicKey)
 	txo := txOutput{value, publicKeyHash}
@@ -55,8 +54,12 @@ func (bc *blockchain) CreataGenesisTransaction(address string, value int) {
 }
 
 func (bc *blockchain) CreataRewardTransaction(address string) Transaction {
+	if address == "" {
+		log.Warn("没有设置挖矿奖励地址，如果出块则不会给予奖励代币")
+		return Transaction{}
+	}
 	if !IsVaildBitcoinAddress(address) {
-		log.Errorf("奖励地址格式不正确:%s\n", address)
+		log.Warnf("奖励地址格式不正确:%s\n", address)
 		return Transaction{}
 	}
 
@@ -66,6 +69,7 @@ func (bc *blockchain) CreataRewardTransaction(address string) Transaction {
 	ts.hash()
 	return ts
 }
+
 //设置挖矿奖励地址
 func (bc *blockchain) SetRewardAddress(address string) {
 	bc.BD.Put([]byte(RewardAddrMapping), []byte(address), database.AddrBucket)
@@ -93,20 +97,21 @@ func (bc *blockchain) Transfer(tss []Transaction) {
 		log.Error("没有通过余额验证的交易，不予挖矿出块！")
 		return
 	}
+	//如果设置了奖励地址，则挖矿成功后给予奖励代币
 	rewardTs := bc.CreataRewardTransaction(string(bc.BD.View([]byte(RewardAddrMapping), database.AddrBucket)))
-	tss = append(tss, rewardTs)
+	if rewardTs.TxHash != nil {
+		tss = append(tss, rewardTs)
+	}
 	bc.addBlockchain(tss)
 }
-
-
 
 //创建UTXO交易实例
 func (bc *blockchain) CreateTransaction(fromSlice, toSlice []string, amountSlice []int) []Transaction {
 	var tss []Transaction
 	wallets := NewWallets(bc.BD)
 	for index, fromAddress := range fromSlice {
-		fromKeys := wallets.Wallets[fromAddress]
-		if fromKeys == nil {
+		fromKeys,ok := wallets.Wallets[fromAddress]
+		if !ok {
 			log.Errorf("没有找到地址%s所对应的公钥,跳过此笔交易\n", fromAddress)
 			continue
 		}
@@ -118,7 +123,7 @@ func (bc *blockchain) CreateTransaction(fromSlice, toSlice []string, amountSlice
 		u := UTXOHandle{bc}
 		//获取数据库中的utxo
 		utxos := u.findUTXOFromAddress(fromAddress)
-		if utxos == nil {
+		if len(utxos) == 0 {
 			log.Errorf("%s 余额为0", fromAddress)
 			return nil
 		}
@@ -189,13 +194,12 @@ func (bc *blockchain) CreateTransaction(fromSlice, toSlice []string, amountSlice
 	return tss
 }
 
-
 //检验交易余额是否足够,如果不够则剔除
-func (bc *blockchain) VerifyTransBalance(tss *[]Transaction){
+func (bc *blockchain) VerifyTransBalance(tss *[]Transaction) {
 	//获取每个地址的UTXO余额，并存入字典中
 	var balance = map[string]int{}
-	for i,_ := range *tss {
-		fromAddress:= GetAddressFromPublicKey((*tss)[i].Vint[0].PublicKey)
+	for i, _ := range *tss {
+		fromAddress := GetAddressFromPublicKey((*tss)[i].Vint[0].PublicKey)
 		//获取数据库中的utxo
 		u := UTXOHandle{bc}
 		utxos := u.findUTXOFromAddress(fromAddress)
@@ -204,44 +208,44 @@ func (bc *blockchain) VerifyTransBalance(tss *[]Transaction){
 			continue
 		}
 		var aomunt = 0
-		for _,v:=range utxos {
+		for _, v := range utxos {
 			aomunt += v.Vout.Value
 		}
 		balance[fromAddress] = aomunt
 	}
-	circle:
-	for i,_ := range *tss {
-		fromAddress:= GetAddressFromPublicKey((*tss)[i].Vint[0].PublicKey)
+circle:
+	for i, _ := range *tss {
+		fromAddress := GetAddressFromPublicKey((*tss)[i].Vint[0].PublicKey)
 		u := UTXOHandle{bc}
 		utxos := u.findUTXOFromAddress(fromAddress)
-		var utxoAmount int   //vint将要花费的总utxo
-		var voutAmount int	 //vout剩余的utxo
-		var costAmount int   //vint将要花费的总utxo减去vout剩余的utxo等于花费的钱数
+		var utxoAmount int //vint将要花费的总utxo
+		var voutAmount int //vout剩余的utxo
+		var costAmount int //vint将要花费的总utxo减去vout剩余的utxo等于花费的钱数
 		//获取每笔vin的值
-		for _,vIn:=range (*tss)[i].Vint {
-			for _,vUTXO:=range utxos {
-				if bytes.Equal(vIn.TxHash ,vUTXO.Hash) && vIn.Index == vUTXO.Index {
+		for _, vIn := range (*tss)[i].Vint {
+			for _, vUTXO := range utxos {
+				if bytes.Equal(vIn.TxHash, vUTXO.Hash) && vIn.Index == vUTXO.Index {
 					utxoAmount += vUTXO.Vout.Value
 				}
 			}
 		}
-		for _,vOut:=range (*tss)[i].Vout {
-			if bytes.Equal(getPublicKeyHashFromAddress(fromAddress),vOut.PublicKeyHash) {
+		for _, vOut := range (*tss)[i].Vout {
+			if bytes.Equal(getPublicKeyHashFromAddress(fromAddress), vOut.PublicKeyHash) {
 				voutAmount += vOut.Value
 			}
 		}
 		costAmount = utxoAmount - voutAmount
-		if _,ok:=balance[fromAddress];ok {
+		if _, ok := balance[fromAddress]; ok {
 			balance[fromAddress] -= costAmount
-			if balance[fromAddress] <0 {
+			if balance[fromAddress] < 0 {
 				log.Errorf("%s 余额不够，已将此笔交易剔除！", fromAddress)
-				*tss=append((*tss)[:i],(*tss)[i+1:]...)
+				*tss = append((*tss)[:i], (*tss)[i+1:]...)
 				balance[fromAddress] += costAmount
 				goto circle
 			}
-		}else  {
+		} else {
 			log.Errorf("%s 余额不够，已将此笔交易剔除！", fromAddress)
-			*tss=append((*tss)[:i],(*tss)[i+1:]...)
+			*tss = append((*tss)[:i], (*tss)[i+1:]...)
 			goto circle
 		}
 	}
@@ -301,7 +305,7 @@ func (bc *blockchain) findAllUTXOs() map[string][]*UTXO {
 
 func (bc *blockchain) newGenesisBlockchain(transaction []Transaction) {
 	//判断一下是否已生成创世区块
-	if bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket) != nil {
+	if len(bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket)) != 0 {
 		log.Fatal("不可重复生成创世区块")
 	}
 	genesisBlock := newGenesisBlock(transaction)
@@ -311,10 +315,10 @@ func (bc *blockchain) newGenesisBlockchain(transaction []Transaction) {
 //进行挖矿操作
 func (bc *blockchain) addBlockchain(transaction []Transaction) {
 	preBlockbyte := bc.BD.View(bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket), database.BlockBucket)
-	p := Deserialize(preBlockbyte, &Block{})
-	preBlock := p.(*Block)
+	preBlock := Block{}
+	preBlock.Deserialize(preBlockbyte)
 	height := preBlock.Height + 1
-	nb,err := newBlock(transaction, bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket), height)
+	nb, err := newBlock(transaction, bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket), height)
 	if err != nil {
 		log.Warn(err)
 		return
@@ -334,13 +338,13 @@ func (bc *blockchain) AddBlock(block *Block) {
 	if block.Height == 1 {
 		bc.BD.Put(block.Hash, block.Serialize(), database.BlockBucket)
 		bc.BD.Put([]byte(LastBlockHashMapping), block.Hash, database.BlockBucket)
-	}else {
+	} else {
 		bci := NewBlockchainIterator(bc)
 		currentBlock := bci.Next()
 		if currentBlock.Height < block.Height {
 			bc.BD.Put(block.Hash, block.Serialize(), database.BlockBucket)
 			bc.BD.Put([]byte(LastBlockHashMapping), block.Hash, database.BlockBucket)
-		}else {
+		} else {
 			log.Warn("区块高度相同或者小于当前高度，不予存入数据库")
 		}
 	}
@@ -352,7 +356,7 @@ func (bc *blockchain) signatureTransactions(tss []Transaction, wallets *wallets)
 		copyTs := tss[i].customCopy()
 		for index, _ := range tss[i].Vint {
 			//获取地址
-			bk := bitcoinKeys{nil, tss[i].Vint[index].PublicKey,nil}
+			bk := bitcoinKeys{nil, tss[i].Vint[index].PublicKey, nil}
 			address := bk.getAddress()
 			trans, err := bc.findTransaction(tss, tss[i].Vint[index].TxHash)
 			if err != nil {
@@ -369,8 +373,8 @@ func (bc *blockchain) signatureTransactions(tss []Transaction, wallets *wallets)
 }
 
 //数字签名验证
-func (bc *blockchain) verifyTransactionsSign(tss *[]Transaction)  {
-	circle:
+func (bc *blockchain) verifyTransactionsSign(tss *[]Transaction) {
+circle:
 	for i, _ := range *tss {
 		copyTs := (*tss)[i].customCopy()
 		for index, Vin := range (*tss)[i].Vint {
@@ -380,7 +384,7 @@ func (bc *blockchain) verifyTransactionsSign(tss *[]Transaction)  {
 			}
 			if !bytes.Equal(findTs.Vout[Vin.Index].PublicKeyHash, generatePublicKeyHash(Vin.PublicKey)) {
 				log.Errorf("签名验证失败 %x笔交易的vin并非是本人", (*tss)[i].TxHash)
-				*tss=append((*tss)[:i],(*tss)[i+1:]...)
+				*tss = append((*tss)[:i], (*tss)[i+1:]...)
 				goto circle
 			}
 			copyTs.Vint[index].Signature = nil
@@ -389,7 +393,7 @@ func (bc *blockchain) verifyTransactionsSign(tss *[]Transaction)  {
 			copyTs.Vint[index].PublicKey = nil
 			if !ellipticCurveVerify(Vin.PublicKey, Vin.Signature, copyTs.TxHash) {
 				log.Errorf("此笔交易：%x没通过签名验证", (*tss)[i].TxHash)
-				*tss=append((*tss)[:i],(*tss)[i+1:]...)
+				*tss = append((*tss)[:i], (*tss)[i+1:]...)
 				goto circle
 			}
 		}
@@ -403,7 +407,7 @@ func (bc *blockchain) verifyTransactionsSign(tss *[]Transaction)  {
   在查找已插入数据库的交易
 */
 func (bc *blockchain) findTransaction(tss []Transaction, ID []byte) (Transaction, error) {
-	if tss != nil {
+	if len(tss) != 0 {
 		for _, tx := range tss {
 			if bytes.Compare(tx.TxHash, ID) == 0 {
 				return tx, nil

@@ -11,14 +11,12 @@ import (
 
 func (cli *Cli) transfer(from, to string, amount string) {
 	bc := block.NewBlockchain()
-	defer bc.BD.Close()
-
 	//判断一下是否已生成创世区块
-	if bc.BD.View([]byte(block.LastBlockHashMapping), database.BlockBucket) == nil {
+	if len(bc.BD.View([]byte(block.LastBlockHashMapping), database.BlockBucket)) == 0 {
 		log.Fatal("还没有生成创世区块，不可进行转账操作 !")
 	}
-	if bc.BD.View([]byte(block.RewardAddrMapping), database.AddrBucket) == nil {
-		log.Fatal("没有设置挖矿奖励地址，请前往设置!")
+	if len(bc.BD.View([]byte(block.RewardAddrMapping), database.AddrBucket)) == 0 {
+		log.Warn("没有设置挖矿地址，如果挖出区块将不会给予奖励代币!")
 	}
 	fromSlice := []string{}
 	toSlice := []string{}

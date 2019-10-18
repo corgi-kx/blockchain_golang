@@ -9,7 +9,6 @@ import (
 
 func (cli *Cli) printAllWallets() {
 	bd := database.New(nodeID)
-	defer bd.Close()
 	wallets := block.NewWallets(bd)
 	if len(wallets.Wallets) == 0 {
 		log.Error("当前节点没有生成或导入的钱包信息！")

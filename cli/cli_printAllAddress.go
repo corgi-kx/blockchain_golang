@@ -9,7 +9,6 @@ import (
 
 func (cli *Cli) printAllAddress() {
 	bd := database.New(nodeID)
-	defer bd.Close()
 	addressList := block.GetAllAddress(bd)
 	if addressList == nil {
 		log.Fatal("当前节点没有生成或导入的钱包信息！")

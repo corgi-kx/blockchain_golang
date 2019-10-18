@@ -2,7 +2,6 @@ package block
 
 import (
 	"bytes"
-	"crypto/elliptic"
 	"encoding/gob"
 	"fmt"
 	log "github.com/corgi-kx/blockchain_golang/logcustom"
@@ -10,8 +9,7 @@ import (
 	"time"
 )
 
-//当前网络中，区块最新高度
-var NewestBlockHeight int
+
 
 type Block struct {
 	//上一个区块的hash
@@ -66,6 +64,14 @@ func (b *Block) Serialize() []byte {
 	return result.Bytes()
 }
 
+func  (v *Block) Deserialize(d []byte){
+	decoder := gob.NewDecoder(bytes.NewReader(d))
+	err := decoder.Decode(v)
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
 func isGenesisBlock(block *Block) bool {
 	var hashInt big.Int
 	hashInt.SetBytes(block.PreHash)
@@ -73,25 +79,4 @@ func isGenesisBlock(block *Block) bool {
 		return true
 	}
 	return false
-}
-
-func Deserialize(d []byte, i interface{}) interface{} {
-	var model interface{}
-	switch i.(type) {
-	case *Block:
-		model = i.(*Block)
-	case *addressList:
-		model = i.(*addressList)
-	case *bitcoinKeys:
-		gob.Register(elliptic.P256())
-		model = i.(*bitcoinKeys)
-	default:
-		log.Fatal("Deserialize err :没有可反序列化的类型")
-	}
-	decoder := gob.NewDecoder(bytes.NewReader(d))
-	err := decoder.Decode(model)
-	if err != nil {
-		log.Panic(err)
-	}
-	return model
 }

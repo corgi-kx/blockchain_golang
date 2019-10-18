@@ -9,7 +9,7 @@ import (
 	"encoding/gob"
 	log "github.com/corgi-kx/blockchain_golang/logcustom"
 	"github.com/corgi-kx/blockchain_golang/util"
-	"github.com/crypto/ripemd160"
+	"github.com/golang/crypto/ripemd160"
 	"math/big"
 	"os"
 )
@@ -145,13 +145,24 @@ func (b *bitcoinKeys) serliazle() []byte {
 	return result.Bytes()
 }
 
+func  (v *bitcoinKeys) Deserialize(d []byte){
+	decoder := gob.NewDecoder(bytes.NewReader(d))
+	gob.Register(elliptic.P256())
+	err := decoder.Decode(v)
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
+
 func generatePublicKeyHash(publicKey []byte) []byte {
 	sha256PubKey := sha256.Sum256(publicKey)
-	r := New()
+	r := ripemd160.New()
 	r.Reset()
 	r.Write(sha256PubKey[:])
 	ripPubKey := r.Sum(nil)
 	return ripPubKey
+	return nil
 }
 
 func getPublicKeyHashFromAddress(address string) []byte {

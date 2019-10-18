@@ -90,7 +90,7 @@ func (t *Transaction) customCopy() Transaction {
 }
 
 func isGenesisTransaction(tss []Transaction) bool {
-	if tss != nil {
+	if len(tss) != 0 {
 		if tss[0].Vint[0].Index == -1 {
 			return true
 		}

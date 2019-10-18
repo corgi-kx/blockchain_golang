@@ -112,8 +112,8 @@ func Panic(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = joint(lPanic, s, WinColorPurple)
+	defer winKernelColse()
 	p.Panicln(message)
-	winKernelColse()
 }
 
 //Panicf级别的打印信息，第一个参数输入格式,第二个参数输入要打印的内容
@@ -123,8 +123,8 @@ func Panicf(format string, v ...interface{}) {
 	s := fmt.Sprintf(format, v...)
 	var message string
 	message = joint(lPanic, s, WinColorPurple)
+	defer winKernelColse()
 	p.Panicln(message)
-	winKernelColse()
 }
 
 //Fatal级别的打印信息，输入要打印的内容，会自动换行
@@ -246,8 +246,8 @@ func (l mylog) Panic(v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lPanic, s, WinColorPurple)
+	defer winKernelColse()
 	p.Panicln(message)
-	winKernelColse()
 }
 
 func (l mylog) Panicf(format string, v ...interface{}) {
@@ -255,8 +255,8 @@ func (l mylog) Panicf(format string, v ...interface{}) {
 	s := fmt.Sprint(v...)
 	var message string
 	message = l.joint(lPanic, s, WinColorPurple)
+	defer winKernelColse()
 	p.Panicln(message)
-	winKernelColse()
 }
 
 func (l mylog) Fatal(v ...interface{}) {
