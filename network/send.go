@@ -1,0 +1,78 @@
+
+package network
+
+import (
+	"bufio"
+	"github.com/corgi-kx/blockchain_golang/blc"
+	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-core/protocol"
+)
+
+type Send struct {
+}
+
+//像其他P2P节点发送高度信息
+func (s Send)SendVersionToPeers(lastHeight int) {
+		newV:=version{versionInfo,lastHeight,localAddr}
+		data:=jointMessage(cVersion,newV.serialize())
+		for _,v :=range peerPool {
+			s.SendMessage(v,data)
+		}
+
+		log.Trace("version信息发送完毕...")
+}
+
+//像其他P2P节点发送交易信息
+func (s Send)SendTransToPeers(ts []block.Transaction) {
+	//向交易信息列表加入节点地址信息
+	nts:=make([]Transaction,len(ts))
+	for i,_ :=range ts {
+		nts[i].TxHash = ts[i].TxHash
+		nts[i].Vout = ts[i].Vout
+		nts[i].Vint = ts[i].Vint
+		nts[i].AddrFrom = localAddr
+	}
+	tss:=Transactions{nts}
+	//开启一个go程,先传送给自己进行处理
+	go handleTransaction(tss.Serialize())
+	//然后将命令与交易列表拼接好发送给全网节点
+	data:=jointMessage(cTransaction,tss.Serialize())
+	for _,v :=range peerPool {
+		s.SendMessage(v,data)
+	}
+	log.Tracef("已发送%d笔交易到网络中其他P2P节点",len(tss.Ts))
+}
+
+//发送消息函数
+func (Send) SendMessage(peer peer.AddrInfo, data []byte) {
+	//连接传入的对等节点
+	if err := localHost.Connect(ctx, peer); err != nil {
+		log.Error("Connection failed:", err)
+	}
+	//打开一个流，向流写入信息后关闭
+	stream, err := localHost.NewStream(ctx, peer.ID, protocol.ID(PROTOCOL_ID))
+	if err != nil {
+		log.Debug("Stream open failed", err)
+	} else {
+		cmd,_:=splitMessage(data)
+		log.Debugf("send cmd:%s to peer:%v", cmd,peer)
+		//创建一个缓冲流的容器
+		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+		//写入信息到缓冲容器
+		_,err:=rw.Write(data)
+		if err != nil {
+			log.Panic(err)
+		}
+		//向流中写入所有缓冲数据
+		err = rw.Flush()
+		if err != nil {
+			log.Panic(err)
+		}
+		//关闭流，完成一次信息的发送
+		err = stream.Close()
+		if err != nil {
+			log.Panic(err)
+		}
+	}
+}

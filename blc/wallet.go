@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"github.com/corgi-kx/blockchain_golang/database"
-	log "github.com/corgi-kx/logcustom"
+	log "github.com/corgi-kx/blockchain_golang/logcustom"
 )
 
 type addressList [][]byte

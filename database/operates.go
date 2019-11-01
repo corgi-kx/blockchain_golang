@@ -4,10 +4,11 @@ import (
 	"errors"
 	"github.com/boltdb/bolt"
 	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	"strconv"
 )
 
 func (bd *BlockchainDB) Put(k, v []byte, bt BucketType) {
-	var DBFileName = "blockchain_" + bd.nodeID + ".db"
+	var DBFileName = "blockchain_" + strconv.Itoa(bd.nodeID) + ".db"
 	db, err := bolt.Open(DBFileName, 0600, nil)
 	defer db.Close()
 	if err != nil {
@@ -35,7 +36,7 @@ func (bd *BlockchainDB) Put(k, v []byte, bt BucketType) {
 }
 
 func (bd *BlockchainDB) View(k []byte, bt BucketType) []byte {
-	var DBFileName = "blockchain_" + bd.nodeID + ".db"
+	var DBFileName = "blockchain_" + strconv.Itoa(bd.nodeID) + ".db"
 	db, err := bolt.Open(DBFileName, 0600, nil)
 	defer db.Close()
 	if err != nil {
@@ -63,7 +64,7 @@ func (bd *BlockchainDB) View(k []byte, bt BucketType) []byte {
 }
 
 func (bd *BlockchainDB) Delete(k []byte, bt BucketType) bool {
-	var DBFileName = "blockchain_" + bd.nodeID + ".db"
+	var DBFileName = "blockchain_" + strconv.Itoa(bd.nodeID) + ".db"
 	db, err := bolt.Open(DBFileName, 0600, nil)
 	defer db.Close()
 	if err != nil {
@@ -89,7 +90,7 @@ func (bd *BlockchainDB) Delete(k []byte, bt BucketType) bool {
 }
 
 func (bd *BlockchainDB) DeleteBucket(bt BucketType) bool {
-	var DBFileName = "blockchain_" + bd.nodeID + ".db"
+	var DBFileName = "blockchain_" + strconv.Itoa(bd.nodeID) + ".db"
 	db, err := bolt.Open(DBFileName, 0600, nil)
 	defer db.Close()
 	if err != nil {

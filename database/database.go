@@ -4,6 +4,7 @@ import (
 	"github.com/boltdb/bolt"
 	log "github.com/corgi-kx/blockchain_golang/logcustom"
 	"os"
+	"strconv"
 )
 
 // 仓库类型
@@ -16,10 +17,10 @@ const (
 )
 
 type BlockchainDB struct {
-	nodeID string
+	nodeID int
 }
 
-func New(nodeID string) *BlockchainDB {
+func New(nodeID int) *BlockchainDB {
 	bd := &BlockchainDB{ nodeID}
 	return bd
 }
@@ -40,7 +41,7 @@ func IsBlotExist(nodeID string) bool {
 func IsBucketExist(bd *BlockchainDB, bt BucketType) bool {
 	var isBucketExist bool
 
-	var DBFileName = "blockchain_" + bd.nodeID + ".db"
+	var DBFileName = "blockchain_" + strconv.Itoa(bd.nodeID) + ".db"
 	db, err := bolt.Open(DBFileName, 0600, nil)
 	if err != nil {
 		log.Panic(err)

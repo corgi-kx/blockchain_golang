@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"errors"
-	"fmt"
 	"github.com/corgi-kx/blockchain_golang/util"
+	log "github.com/corgi-kx/blockchain_golang/logcustom"
 	"math/big"
 )
 
@@ -25,7 +25,7 @@ func (p *proofOfWork) run() (int,[]byte,error) {
 	nonce := 0
 	var hashByte [32]byte
 	var hashInt big.Int
-	fmt.Println("Mining the block  ....")
+	log.Info("正在挖矿...")
 	for nonce < maxInt {
 		//检测网络上其他节点是否已经挖出了区块
 		if p.Height <= NewestBlockHeight {
@@ -33,7 +33,7 @@ func (p *proofOfWork) run() (int,[]byte,error) {
 		}
 		data := p.jointData(nonce)
 		hashByte = sha256.Sum256(data)
-		fmt.Printf("\r current hash : %x", hashByte)
+		//fmt.Printf("\r current hash : %x", hashByte)
 		//将hash值转换为大数字
 		hashInt.SetBytes(hashByte[:])
 		if hashInt.Cmp(p.Target) == -1 {
@@ -42,6 +42,7 @@ func (p *proofOfWork) run() (int,[]byte,error) {
 			nonce++
 		}
 	}
+	log.Infof("挖到区块了,区块hash为: %x", hashByte)
 	return nonce, hashByte[:],nil
 }
 

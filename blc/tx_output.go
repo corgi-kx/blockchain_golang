@@ -1,6 +1,6 @@
 package block
 
-type txOutput struct {
+type TXOutput struct {
 	Value         int
 	PublicKeyHash []byte
 }

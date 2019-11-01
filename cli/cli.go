@@ -5,11 +5,10 @@ import (
 	"fmt"
 	log "github.com/corgi-kx/blockchain_golang/logcustom"
 	"os"
+	"strconv"
 )
 
-var (
-	nodeID = ""
-)
+var nodeID int
 
 type Cli struct {
 }
@@ -19,7 +18,7 @@ func printUsage() {
 	fmt.Println("\tgenesis  -a DATA  -v DATA                         生成创世区块")
 	fmt.Println("\tgenerateWallet                                    生成钱包")
 	fmt.Println("\tsetRewardAddr -a DATA                             设置挖矿奖励地址")
-	fmt.Println("\tibMnemonicword -m                                   根据助记词导入钱包")
+	fmt.Println("\tibMnemonicword -m                                 根据助记词导入钱包")
 	fmt.Println("\tprintAllAddr                                      查看本地存在的地址信息")
 	fmt.Println("\tprintAllWallets                                   查看本地存在的钱包信息")
 	fmt.Println("\tgetBalance  -a DATA                               查看用户余额")
@@ -35,16 +34,33 @@ func isValidArgs() {
 	}
 }
 
-func getNodeID() {
+
+func init() {
+
+
+
 	id := os.Getenv("NODE_ID")
 	if id == "" {
 		fmt.Println("请设置节点端口号！")
 		os.Exit(1)
 	}
-	nodeID = id
-	log.Debug("NODE_ID:", nodeID)
+	var err error
+	nodeID ,err = strconv.Atoi(id)
+	if err != nil {
+		log.Panic("端口号转换失败,请检查是否是数字!,",err)
+	}
+	fmt.Printf("当前节点端口号:%d\n",nodeID)
 
+	//将日志输出到指定文件
+	file, err := os.OpenFile(fmt.Sprintf("log%d.txt",nodeID), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Error(err)
+	}
+	log.SetOutputAll(file)
+	log.Debug("NODE_ID:", nodeID)
 }
+
+
 
 func New() *Cli {
 	return &Cli{}
@@ -52,7 +68,6 @@ func New() *Cli {
 
 func (cli *Cli) Run() {
 	isValidArgs()
-	getNodeID()
 	flagGenesisBlockchain := flag.NewFlagSet("genesis", flag.ExitOnError)
 	cmdGenesisBlockchainAddress := flagGenesisBlockchain.String("a", "", "添加创世区块用户地址")
 	cmdGenesisBlockchainValue := flagGenesisBlockchain.Int("v", 0, "添加创世区块金额数量")

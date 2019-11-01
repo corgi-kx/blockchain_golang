@@ -1,8 +1,9 @@
-package send
+package network
 
 import (
 	"bytes"
 	"encoding/gob"
+	block "github.com/corgi-kx/blockchain_golang/blc"
 	log "github.com/corgi-kx/blockchain_golang/logcustom"
 )
 
@@ -13,25 +14,12 @@ type Transactions struct {
 type Transaction struct {
 	TxHash []byte
 	//UTXO输入
-	Vint []txInput
+	Vint []block.TXInput
 	//UTXO输出
-	Vout []txOutput
+	Vout []block.TXOutput
 
 	AddrFrom string
 }
-type txInput struct {
-	TxHash    []byte
-	Index     int
-	Signature []byte
-	PublicKey []byte
-}
-
-type txOutput struct {
-	Value         int
-	PublicKeyHash []byte
-}
-
-
 
 // 将transaction序列化成[]byte
 func (t *Transactions) Serialize() []byte {

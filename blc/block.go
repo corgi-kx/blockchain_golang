@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-
-
 type Block struct {
 	//上一个区块的hash
 	PreHash []byte
@@ -38,8 +36,8 @@ func newBlock(transaction []Transaction, preHash []byte, height int) (*Block,err
 	}
 	block.Nonce = nonce
 	block.Hash = hash[:]
-	fmt.Println("pow verify : ", pow.Verify())
-	fmt.Println("已生成新的区块")
+	log.Info("pow verify : ", pow.Verify())
+	log.Info("已生成新的区块")
 	return &block,nil
 }
 

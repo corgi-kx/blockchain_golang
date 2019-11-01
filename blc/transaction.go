@@ -12,9 +12,9 @@ import (
 type Transaction struct {
 	TxHash []byte
 	//UTXO输入
-	Vint []txInput
+	Vint []TXInput
 	//UTXO输出
-	Vout []txOutput
+	Vout []TXOutput
 }
 
 func (t *Transaction) hash() {
@@ -78,13 +78,13 @@ func (t *Transaction) getTransBytes() []byte {
 }
 
 func (t *Transaction) customCopy() Transaction {
-	newVin := []txInput{}
-	newVout := []txOutput{}
+	newVin := []TXInput{}
+	newVout := []TXOutput{}
 	for _, vin := range t.Vint {
-		newVin = append(newVin, txInput{vin.TxHash, vin.Index, nil, nil})
+		newVin = append(newVin, TXInput{vin.TxHash, vin.Index, nil, nil})
 	}
 	for _, vout := range t.Vout {
-		newVout = append(newVout, txOutput{vout.Value, vout.PublicKeyHash})
+		newVout = append(newVout, TXOutput{vout.Value, vout.PublicKeyHash})
 	}
 	return Transaction{t.TxHash, newVin, newVout}
 }

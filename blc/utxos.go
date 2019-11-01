@@ -7,6 +7,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/corgi-kx/blockchain_golang/database"
 	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	"strconv"
 )
 
 type UTXOHandle struct {
@@ -32,7 +33,7 @@ func (u *UTXOHandle) findUTXOFromAddress(address string) []*UTXO {
 	utxosSlice := []*UTXO{}
 	//获取bolt迭代器，遍历整个UTXO数据库
 	//打开数据库
-	var DBFileName = "blockchain_" + nodeID + ".db"
+	var DBFileName = "blockchain_" + strconv.Itoa(nodeID) + ".db"
 	db, err := bolt.Open(DBFileName, 0600, nil)
 	if err != nil {
 		log.Panic(err)

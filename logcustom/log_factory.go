@@ -70,8 +70,8 @@ func (l mylog) SetOutput(w io.Writer, t logType) {
 
 //设置全部日志级别输出到目的地
 func (l mylog) SetOutputAll(w io.Writer) {
-	for _, v := range l.loggers {
-		v.SetOutput(w)
+	for i, _ := range loggers {
+		loggers[i].SetOutput(w)
 	}
 }
 

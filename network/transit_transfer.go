@@ -1,4 +1,4 @@
-package send
+package network
 
 import (
 	"bytes"
@@ -6,24 +6,24 @@ import (
 	log "github.com/corgi-kx/blockchain_golang/logcustom"
 )
 
-type version struct {
-	Version byte
-	Height int
-	AddrFrom string
+type transfer struct {
+	from []string
+	to []string
+	amount []string
 }
 
-func (v version) serialize() []byte {
+func (t *transfer) Serialize() []byte {
 	var result bytes.Buffer
 	encoder := gob.NewEncoder(&result)
 
-	err := encoder.Encode(v)
+	err := encoder.Encode(t)
 	if err != nil {
 		panic(err)
 	}
 	return result.Bytes()
 }
 
-func  (v *version) deserialize(d []byte){
+func  (v *transfer) Deserialize(d []byte){
 	decoder := gob.NewDecoder(bytes.NewReader(d))
 	err := decoder.Decode(v)
 	if err != nil {

@@ -1,0 +1,44 @@
+[36m[DEBUG]: 2019/11/01 11:20:54 cli.go:60:0: NODE_ID:8002[0m
+[33m[WARN]: 2019/11/01 11:20:54 operates.go:57:View: datebase view warnning:没有找到仓库：blocks[0m
+[33m[WARN]: 2019/11/01 11:20:54 operates.go:57:View: datebase view warnning:没有找到仓库：blocks[0m
+[34m[INFO]: 2019/11/01 11:20:54 server.go:36:StartNode: [*] 监听IP地址: 0.0.0.0 端口号: 8002[0m
+[34m[INFO]: 2019/11/01 11:20:54 server.go:58:StartNode: [*] 你的P2P地址信息: /ip4/0.0.0.0/tcp/8002/p2p/QmcaqXotZ63Gaa7cYWYoBroPD2iUQYQfSRbaNqm7yeWPCD[0m
+[32m[TRACE]: 2019/11/01 11:21:07 handle.go:19:handleStream: 本节点已接收到命令：version[0m
+[36m[DEBUG]: 2019/11/01 11:21:07 handle.go:186:handleVersion: 对方版本比咱们大{0 1 /ip4/0.0.0.0/tcp/8001/p2p/QmVCrQxztgFrbAx3BKHBDrqcEcA4L81zizze5qgJjLoyyR},发送获取区块的hash信息！[0m
+[36m[DEBUG]: 2019/11/01 11:21:07 send.go:59:SendMessage: send cmd:getHash to peer:{QmVCrQxztgFrbAx3BKHBDrqcEcA4L81zizze5qgJjLoyyR: [/ip4/0.0.0.0/tcp/8001]}[0m
+[32m[TRACE]: 2019/11/01 11:21:07 handle.go:19:handleStream: 本节点已接收到命令：hashMap[0m
+[33m[WARN]: 2019/11/01 11:21:07 operates.go:57:View: datebase view warnning:没有找到仓库：blocks[0m
+[33m[WARN]: 2019/11/01 11:21:07 operates.go:57:View: datebase view warnning:没有找到仓库：blocks[0m
+[36m[DEBUG]: 2019/11/01 11:21:07 send.go:59:SendMessage: send cmd:getBlock to peer:{QmVCrQxztgFrbAx3BKHBDrqcEcA4L81zizze5qgJjLoyyR: [/ip4/0.0.0.0/tcp/8001]}[0m
+[36m[DEBUG]: 2019/11/01 11:21:07 handle.go:142:handleHashMap: 已发送获取区块信息命令,目标高度为：1[0m
+[32m[TRACE]: 2019/11/01 11:21:07 handle.go:19:handleStream: 本节点已接收到命令：block[0m
+[36m[DEBUG]: 2019/11/01 11:21:07 handle.go:91:handleBlock: 本节点已接收到来自中心节点的区块数据，该块hash为：0000024c9b37792ca4375430806bd3cd5279fb20c6cb174c086a150ae454895f[0m
+[36m[DEBUG]: 2019/11/01 11:21:07 handle.go:104:handleBlock: POW验证通过,已将区块0000024c9b37792ca4375430806bd3cd5279fb20c6cb174c086a150ae454895f加入数据库,该区块高度为：1[0m
+[36m[DEBUG]: 2019/11/01 11:21:09 send.go:59:SendMessage: send cmd:version to peer:{QmVCrQxztgFrbAx3BKHBDrqcEcA4L81zizze5qgJjLoyyR: [/ip4/192.168.134.131/tcp/8001]}[0m
+[32m[TRACE]: 2019/11/01 11:21:09 send.go:23:SendVersionToPeers: version信息发送完毕...[0m
+[34m[INFO]: 2019/11/01 11:21:09 server.go:69:func1: ----------------------已检测到新P2P节点,当前节点池存在的节点-----------------------------[0m
+[34m[INFO]: 2019/11/01 11:21:09 server.go:71:func1: |   {QmVCrQxztgFrbAx3BKHBDrqcEcA4L81zizze5qgJjLoyyR: [/ip4/192.168.134.131/tcp/8001]}   |[0m
+[34m[INFO]: 2019/11/01 11:21:09 server.go:73:func1: -----------------------------------------------------------------------------------------[0m
+[32m[TRACE]: 2019/11/01 11:21:24 handle.go:19:handleStream: 本节点已接收到命令：transaction[0m
+[36m[DEBUG]: 2019/11/01 11:21:24 handle.go:84:handleTransaction: 已收到交易信息，当前交易池数量:1，交易池未满2，暂不进行挖矿操作[0m
+[32m[TRACE]: 2019/11/01 11:21:24 handle.go:19:handleStream: 本节点已接收到命令：transaction[0m
+[36m[DEBUG]: 2019/11/01 11:21:24 handle.go:55:handleTransaction: 交易池已满足挖矿交易数量大小限制:2,即将进行挖矿[0m
+[36m[DEBUG]: 2019/11/01 11:21:24 handle.go:76:handleTransaction: 咔咔咔咔咔咔咔咔咔咔咔咔咔咔咔咔咔咔咔咔咔咔咔咔卡[0m
+[36m[DEBUG]: 2019/11/01 11:21:24 handle.go:77:handleTransaction: 2[0m
+[36m[DEBUG]: 2019/11/01 11:21:24 blockchain.go:84:Transfer: 蠕蠕蠕蠕蠕日日日日人人人人人人人人人人人人人人人人人人[0m
+[36m[DEBUG]: 2019/11/01 11:21:24 blockchain.go:85:Transfer: 2[0m
+[36m[DEBUG]: 2019/11/01 11:21:24 blockchain.go:476:verifyTransactionsSign: 已完成数字签名验证[0m
+[36m[DEBUG]: 2019/11/01 11:21:24 blockchain.go:326:VerifyTransBalance: 已完成UTXO交易信息余额验证[0m
+[33m[WARN]: 2019/11/01 11:21:24 operates.go:57:View: datebase view warnning:没有找到仓库：address[0m
+[33m[WARN]: 2019/11/01 11:21:24 blockchain.go:57:CreataRewardTransaction: 没有设置挖矿奖励地址，如果出块则不会给予奖励代币[0m
+[34m[INFO]: 2019/11/01 11:21:24 proof_of_work.go:28:run: 正在挖矿...[0m
+[32m[TRACE]: 2019/11/01 11:21:30 handle.go:19:handleStream: 本节点已接收到命令：version[0m
+[36m[DEBUG]: 2019/11/01 11:21:30 handle.go:186:handleVersion: 对方版本比咱们大{0 2 /ip4/0.0.0.0/tcp/8001/p2p/QmVCrQxztgFrbAx3BKHBDrqcEcA4L81zizze5qgJjLoyyR},发送获取区块的hash信息！[0m
+[33m[WARN]: 2019/11/01 11:21:30 blockchain.go:397:addBlockchain: 检测到当前节点已接收到最新区块，所以终止此块的挖矿操作[0m
+[36m[DEBUG]: 2019/11/01 11:21:30 send.go:59:SendMessage: send cmd:getHash to peer:{QmVCrQxztgFrbAx3BKHBDrqcEcA4L81zizze5qgJjLoyyR: [/ip4/0.0.0.0/tcp/8001]}[0m
+[32m[TRACE]: 2019/11/01 11:21:30 handle.go:19:handleStream: 本节点已接收到命令：hashMap[0m
+[36m[DEBUG]: 2019/11/01 11:21:30 send.go:59:SendMessage: send cmd:getBlock to peer:{QmVCrQxztgFrbAx3BKHBDrqcEcA4L81zizze5qgJjLoyyR: [/ip4/0.0.0.0/tcp/8001]}[0m
+[36m[DEBUG]: 2019/11/01 11:21:30 handle.go:142:handleHashMap: 已发送获取区块信息命令,目标高度为：2[0m
+[32m[TRACE]: 2019/11/01 11:21:30 handle.go:19:handleStream: 本节点已接收到命令：block[0m
+[36m[DEBUG]: 2019/11/01 11:21:30 handle.go:91:handleBlock: 本节点已接收到来自中心节点的区块数据，该块hash为：00000536b15d89ab9bf597e5552d42879809511c1d5667b7ef59bbe335a64b21[0m
+[36m[DEBUG]: 2019/11/01 11:21:30 handle.go:104:handleBlock: POW验证通过,已将区块00000536b15d89ab9bf597e5552d42879809511c1d5667b7ef59bbe335a64b21加入数据库,该区块高度为：2[0m

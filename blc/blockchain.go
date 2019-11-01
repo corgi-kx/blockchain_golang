@@ -2,12 +2,11 @@ package block
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/corgi-kx/blockchain_golang/database"
 	log "github.com/corgi-kx/blockchain_golang/logcustom"
-	"github.com/corgi-kx/blockchain_golang/send"
-
 	"math/big"
 
 	"os"
@@ -34,7 +33,7 @@ func (bc *blockchain) CreataGenesisTransaction(address string, value int) {
 		return
 	}
 	//创世区块数据
-	txi := txInput{[]byte{}, -1, nil, nil}
+	txi := TXInput{[]byte{}, -1, nil, nil}
 	wallets := NewWallets(bc.BD)
 	genesisKeys, ok := wallets.Wallets[address]
 	if !ok {
@@ -43,8 +42,8 @@ func (bc *blockchain) CreataGenesisTransaction(address string, value int) {
 
 	//通过地址获取rip160(sha256(publickey))
 	publicKeyHash := generatePublicKeyHash(genesisKeys.PublicKey)
-	txo := txOutput{value, publicKeyHash}
-	ts := Transaction{nil, []txInput{txi}, []txOutput{txo}}
+	txo := TXOutput{value, publicKeyHash}
+	ts := Transaction{nil, []TXInput{txi}, []TXOutput{txo}}
 	ts.hash()
 	tss := []Transaction{ts}
 	bc.newGenesisBlockchain(tss)
@@ -64,8 +63,8 @@ func (bc *blockchain) CreataRewardTransaction(address string) Transaction {
 	}
 
 	publicKeyHash := getPublicKeyHashFromAddress(address)
-	txo := txOutput{tokenRewardNum, publicKeyHash}
-	ts := Transaction{nil, nil, []txOutput{txo}}
+	txo := TXOutput{tokenRewardNum, publicKeyHash}
+	ts := Transaction{nil, nil, []TXOutput{txo}}
 	ts.hash()
 	return ts
 }
@@ -76,13 +75,14 @@ func (bc *blockchain) SetRewardAddress(address string) {
 }
 
 //交易转账
-func (bc *blockchain) Transfer(tss []Transaction) {
+func (bc *blockchain) Transfer(tss []Transaction,send Sender) {
 	//tss := bc.CreateTransaction(fromSlice, toSlice, amountSlice)
 	//if tss == nil {
 	//	log.Error("没有符合规则的交易，不进行出块操作")
 	//	return
 	//}
-
+	log.Debug("蠕蠕蠕蠕蠕日日日日人人人人人人人人人人人人人人人人人人")
+	log.Debug(len(tss))
 	//进行数字签名验证
 	if !isGenesisTransaction(tss) {
 		bc.verifyTransactionsSign(&tss)
@@ -102,11 +102,83 @@ func (bc *blockchain) Transfer(tss []Transaction) {
 	if rewardTs.TxHash != nil {
 		tss = append(tss, rewardTs)
 	}
-	bc.addBlockchain(tss)
+	bc.addBlockchain(tss,send)
 }
 
 //创建UTXO交易实例
-func (bc *blockchain) CreateTransaction(fromSlice, toSlice []string, amountSlice []int) []Transaction {
+func (bc *blockchain) CreateTransaction(from, to string, amount string,send Sender)  {
+
+	//判断一下是否已生成创世区块
+	if len(bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket)) == 0 {
+		log.Fatal("还没有生成创世区块，不可进行转账操作 !")
+	}
+	if len(bc.BD.View([]byte(RewardAddrMapping), database.AddrBucket)) == 0 {
+		log.Warn("没有设置挖矿地址，如果挖出区块将不会给予奖励代币!")
+	}
+	fromSlice := []string{}
+	toSlice := []string{}
+	amountSlice := []int{}
+	err := json.Unmarshal([]byte(from), &fromSlice)
+	if err != nil {
+		log.Fatal("json err:", err)
+	}
+	err = json.Unmarshal([]byte(to), &toSlice)
+	if err != nil {
+		log.Fatal("json err:", err)
+	}
+	err = json.Unmarshal([]byte(amount), &amountSlice)
+	if err != nil {
+		log.Fatal("json err:", err)
+	}
+	if len(fromSlice) != len(toSlice) || len(fromSlice) != len(amountSlice) {
+		log.Fatal("转账数组长度不一致")
+	}
+
+	for i, v := range fromSlice {
+		if !IsVaildBitcoinAddress(v) {
+			log.Errorf(" %s,地址格式不正确！已将此笔交易剔除\n", v)
+			if i < len(fromSlice)-1 {
+				fromSlice = append(fromSlice[:i], fromSlice[i+1:]...)
+				toSlice = append(toSlice[:i], toSlice[i+1:]...)
+				amountSlice = append(amountSlice[:i], amountSlice[i+1:]...)
+			} else {
+				fromSlice = append(fromSlice[:i])
+				toSlice = append(toSlice[:i])
+				amountSlice = append(amountSlice[:i])
+			}
+		}
+	}
+
+	for i, v := range toSlice {
+		if !IsVaildBitcoinAddress(v) {
+			log.Errorf(" %s,地址格式不正确！已将此笔交易剔除\n", v)
+			if i < len(fromSlice)-1 {
+				fromSlice = append(fromSlice[:i], fromSlice[i+1:]...)
+				toSlice = append(toSlice[:i], toSlice[i+1:]...)
+				amountSlice = append(amountSlice[:i], amountSlice[i+1:]...)
+			} else {
+				fromSlice = append(fromSlice[:i])
+				toSlice = append(toSlice[:i])
+				amountSlice = append(amountSlice[:i])
+			}
+		}
+	}
+	for i, v := range amountSlice {
+		if v<0 {
+			log.Error("转账金额不可小于0，已将此笔交易剔除")
+			if i < len(fromSlice)-1 {
+				fromSlice = append(fromSlice[:i], fromSlice[i+1:]...)
+				toSlice = append(toSlice[:i], toSlice[i+1:]...)
+				amountSlice = append(amountSlice[:i], amountSlice[i+1:]...)
+			} else {
+				fromSlice = append(fromSlice[:i])
+				toSlice = append(toSlice[:i])
+				amountSlice = append(amountSlice[:i])
+			}
+		}
+	}
+
+
 	var tss []Transaction
 	wallets := NewWallets(bc.BD)
 	for index, fromAddress := range fromSlice {
@@ -118,14 +190,14 @@ func (bc *blockchain) CreateTransaction(fromSlice, toSlice []string, amountSlice
 		toKeysPublicKeyHash := getPublicKeyHashFromAddress(toSlice[index])
 		if fromAddress == toSlice[index] {
 			log.Errorf("相同地址不能转账！！！:%s\n", fromAddress)
-			return nil
+			return
 		}
 		u := UTXOHandle{bc}
 		//获取数据库中的utxo
 		utxos := u.findUTXOFromAddress(fromAddress)
 		if len(utxos) == 0 {
 			log.Errorf("%s 余额为0", fromAddress)
-			return nil
+			return
 		}
 		//将utxos添加上未打包进区块的交易信息
 		if tss != nil {
@@ -155,24 +227,24 @@ func (bc *blockchain) CreateTransaction(fromSlice, toSlice []string, amountSlice
 			}
 		}
 
-		newTXInput := []txInput{}
-		newTXOutput := []txOutput{}
+		newTXInput := []TXInput{}
+		newTXOutput := []TXOutput{}
 		var amount int
 		for _, utxo := range utxos {
 			amount += utxo.Vout.Value
-			newTXInput = append(newTXInput, txInput{utxo.Hash, utxo.Index, nil, fromKeys.PublicKey})
+			newTXInput = append(newTXInput, TXInput{utxo.Hash, utxo.Index, nil, fromKeys.PublicKey})
 			if amount > amountSlice[index] {
-				tfrom := txOutput{}
+				tfrom := TXOutput{}
 				tfrom.Value = amount - amountSlice[index]
 				tfrom.PublicKeyHash = generatePublicKeyHash(fromKeys.PublicKey)
-				tTo := txOutput{}
+				tTo := TXOutput{}
 				tTo.Value = amountSlice[index]
 				tTo.PublicKeyHash = toKeysPublicKeyHash
 				newTXOutput = append(newTXOutput, tfrom)
 				newTXOutput = append(newTXOutput, tTo)
 				break
 			} else if amount == amountSlice[index] {
-				tTo := txOutput{}
+				tTo := TXOutput{}
 				tTo.Value = amountSlice[index]
 				tTo.PublicKeyHash = toKeysPublicKeyHash
 				newTXOutput = append(newTXOutput, tTo)
@@ -188,10 +260,11 @@ func (bc *blockchain) CreateTransaction(fromSlice, toSlice []string, amountSlice
 		tss = append(tss, ts)
 	}
 	if tss == nil {
-		return nil
+		return
 	}
 	bc.signatureTransactions(tss, wallets)
-	return tss
+	//向P2P节点发送交易数据
+	send.SendTransToPeers(tss)
 }
 
 //检验交易余额是否足够,如果不够则剔除
@@ -207,12 +280,13 @@ func (bc *blockchain) VerifyTransBalance(tss *[]Transaction) {
 			log.Warnf("%s 余额为0！", fromAddress)
 			continue
 		}
-		var aomunt = 0
+		aomunt := 0
 		for _, v := range utxos {
 			aomunt += v.Vout.Value
 		}
 		balance[fromAddress] = aomunt
 	}
+
 circle:
 	for i, _ := range *tss {
 		fromAddress := GetAddressFromPublicKey((*tss)[i].Vint[0].PublicKey)
@@ -268,7 +342,7 @@ func (bc *blockchain) GetBalance(address string) int {
 
 func (bc *blockchain) findAllUTXOs() map[string][]*UTXO {
 	utxosMap := make(map[string][]*UTXO)
-	txInputmap := make(map[string][]txInput)
+	txInputmap := make(map[string][]TXInput)
 	bcIterator := NewBlockchainIterator(bc)
 	for {
 		currentBlock := bcIterator.Next()
@@ -313,7 +387,7 @@ func (bc *blockchain) newGenesisBlockchain(transaction []Transaction) {
 }
 
 //进行挖矿操作
-func (bc *blockchain) addBlockchain(transaction []Transaction) {
+func (bc *blockchain) addBlockchain(transaction []Transaction,send Sender) {
 	preBlockbyte := bc.BD.View(bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket), database.BlockBucket)
 	preBlock := Block{}
 	preBlock.Deserialize(preBlockbyte)
@@ -327,9 +401,10 @@ func (bc *blockchain) addBlockchain(transaction []Transaction) {
 	//将数据同步到UTXO数据库中
 	u := UTXOHandle{bc}
 	u.Synchrodata(transaction)
-	//挖矿出块后 发送高度信息到中心节点
-	send.SendVersionToCenterNode(nb.Height)
-	log.Debug("已生成新区块，将当前区块高度发送至中心节点")
+	log.Debug("已生成新区块，将当前区块高度发送至网络中其他P2P节点")
+	//挖矿出块后 发送高度信息到其他节点
+	send.SendVersionToPeers(nb.Height)
+
 }
 
 //添加区块信息到数据库，并更新lastHash

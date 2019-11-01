@@ -1,6 +1,6 @@
 package block
 
-type txInput struct {
+type TXInput struct {
 	TxHash    []byte
 	Index     int
 	Signature []byte
