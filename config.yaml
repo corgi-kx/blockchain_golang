@@ -1,0 +1,12 @@
+blockchain:
+  #挖矿奖励代币数量
+  tokenRewardNum: 25
+  #交易池大小(满足多少条交易才开始发送挖矿信息)
+  tradePoolLength: 3
+  #中文助记词路径
+  mnemonicWorldPath: "./chinese_mnemonic_world.txt"
+network:
+  #中心节点地址
+  centerNodeAddr: "127.0.0.1:3000"
+  #本地节点地址
+  localNodeAddr: "127.0.0.1:3001"
