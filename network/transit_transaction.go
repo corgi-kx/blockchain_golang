@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	block "github.com/corgi-kx/blockchain_golang/blc"
-	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	log "github.com/corgi-kx/logcustom"
 )
 
 type Transactions struct {

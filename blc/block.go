@@ -3,8 +3,7 @@ package block
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
-	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	log "github.com/corgi-kx/logcustom"
 	"math/big"
 	"time"
 )
@@ -24,13 +23,12 @@ type Block struct {
 	Hash []byte
 }
 
-func newBlock(transaction []Transaction, preHash []byte, height int) (*Block,error) {
+func mineBlock(transaction []Transaction, preHash []byte, height int) (*Block,error) {
 	timeStamp := time.Now().Unix()
 	//hash数据+时间戳+上一个区块hash
 	block := Block{preHash, transaction, timeStamp, height, 0, nil}
 	pow := NewProofOfWork(&block)
 	nonce, hash,err := pow.run()
-	fmt.Println("")
 	if err != nil {
 		return 	nil,err
 	}
@@ -43,7 +41,7 @@ func newBlock(transaction []Transaction, preHash []byte, height int) (*Block,err
 
 func newGenesisBlock(transaction []Transaction) *Block {
 	preHash := []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	genesisBlock,err:= newBlock(transaction, preHash, 1)
+	genesisBlock,err:= mineBlock(transaction, preHash, 1)
 	if err != nil {
 		log.Error(err)
 	}

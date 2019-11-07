@@ -7,7 +7,7 @@ import (
 )
 
 func (cli *Cli) generateWallet() {
-	bd := database.New(nodeID)
+	bd := database.New()
 	wallets := block.NewWallets(bd)
 	address,privkey,mnemonicWord := wallets.GenerateWallet(bd,block.NewBitcoinKeys,[]string{})
 	fmt.Println("助记词：",mnemonicWord)

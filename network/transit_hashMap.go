@@ -3,7 +3,7 @@ package network
 import (
 	"bytes"
 	"encoding/gob"
-	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	log "github.com/corgi-kx/logcustom"
 )
 
 type hashMap  map[int][]byte

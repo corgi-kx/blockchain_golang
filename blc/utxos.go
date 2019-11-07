@@ -6,8 +6,7 @@ import (
 	"errors"
 	"github.com/boltdb/bolt"
 	"github.com/corgi-kx/blockchain_golang/database"
-	log "github.com/corgi-kx/blockchain_golang/logcustom"
-	"strconv"
+	log "github.com/corgi-kx/logcustom"
 )
 
 type UTXOHandle struct {
@@ -18,6 +17,10 @@ type UTXOHandle struct {
 func (u *UTXOHandle) ResetUTXODataBase() {
 	//先查找全部未花费UTXO
 	utxosMap := u.BC.findAllUTXOs()
+	if utxosMap == nil {
+		log.Debug("找不到区块,暂不重置UTXO数据库")
+		return
+	}
 	//删除旧的UTXO数据库
 	if database.IsBucketExist(u.BC.BD, database.UTXOBucket) {
 		u.BC.BD.DeleteBucket(database.UTXOBucket)
@@ -33,7 +36,7 @@ func (u *UTXOHandle) findUTXOFromAddress(address string) []*UTXO {
 	utxosSlice := []*UTXO{}
 	//获取bolt迭代器，遍历整个UTXO数据库
 	//打开数据库
-	var DBFileName = "blockchain_" + strconv.Itoa(nodeID) + ".db"
+	var DBFileName = "blockchain_" + ListenPort + ".db"
 	db, err := bolt.Open(DBFileName, 0600, nil)
 	if err != nil {
 		log.Panic(err)

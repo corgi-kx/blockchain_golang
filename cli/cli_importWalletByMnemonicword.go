@@ -5,17 +5,17 @@ import (
 	"fmt"
 	block "github.com/corgi-kx/blockchain_golang/blc"
 	"github.com/corgi-kx/blockchain_golang/database"
-	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	log "github.com/corgi-kx/logcustom"
 )
 
-func  (cli *Cli)importWalletByMnemonicword(j string){
+func  (cli *Cli)importWalletByMnemonicword(mnemonicword string){
 	mnemonicwords:=[]string{}
-	err := json.Unmarshal([]byte(j), &mnemonicwords)
+	err := json.Unmarshal([]byte(mnemonicword), &mnemonicwords)
 	if err != nil {
-		log.Fatal("json err:", err)
+		log.Error("json err:", err)
 	}
 
-	bd := database.New(nodeID)
+	bd := database.New()
 	wallets := block.NewWallets(bd)
 	address,privkey,mnemonicWord := wallets.GenerateWallet(bd,block.CreateBitcoinKeysByMnemonicWord,mnemonicwords)
 	fmt.Println("助记词：",mnemonicWord)

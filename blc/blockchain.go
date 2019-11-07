@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/corgi-kx/blockchain_golang/database"
-	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	log "github.com/corgi-kx/logcustom"
 	"math/big"
 
 	"os"
@@ -22,12 +22,12 @@ func NewBlockchain() *blockchain {
 	//	log.Fatal(" 没有找到对应的数据库！")
 	//}
 	blockchain := blockchain{}
-	bd := database.New(nodeID)
+	bd := database.New()
 	blockchain.BD = bd
 	return &blockchain
 }
 
-func (bc *blockchain) CreataGenesisTransaction(address string, value int) {
+func (bc *blockchain) CreataGenesisTransaction(address string, value int, send Sender) {
 	if !IsVaildBitcoinAddress(address) {
 		log.Errorf("地址格式不正确:%s\n", address)
 		return
@@ -47,6 +47,9 @@ func (bc *blockchain) CreataGenesisTransaction(address string, value int) {
 	ts.hash()
 	tss := []Transaction{ts}
 	bc.newGenesisBlockchain(tss)
+	//创世区块后,向全网节点发送高度1
+	send.SendVersionToPeers(1)
+	fmt.Println("已成生成创世区块")
 	//重置未花费数据库，将创世数据存入
 	utxos := UTXOHandle{bc}
 	utxos.ResetUTXODataBase()
@@ -63,7 +66,7 @@ func (bc *blockchain) CreataRewardTransaction(address string) Transaction {
 	}
 
 	publicKeyHash := getPublicKeyHashFromAddress(address)
-	txo := TXOutput{tokenRewardNum, publicKeyHash}
+	txo := TXOutput{TokenRewardNum, publicKeyHash}
 	ts := Transaction{nil, nil, []TXOutput{txo}}
 	ts.hash()
 	return ts
@@ -75,14 +78,12 @@ func (bc *blockchain) SetRewardAddress(address string) {
 }
 
 //交易转账
-func (bc *blockchain) Transfer(tss []Transaction,send Sender) {
+func (bc *blockchain) Transfer(tss []Transaction, send Sender) {
 	//tss := bc.CreateTransaction(fromSlice, toSlice, amountSlice)
 	//if tss == nil {
 	//	log.Error("没有符合规则的交易，不进行出块操作")
 	//	return
 	//}
-	log.Debug("蠕蠕蠕蠕蠕日日日日人人人人人人人人人人人人人人人人人人")
-	log.Debug(len(tss))
 	//进行数字签名验证
 	if !isGenesisTransaction(tss) {
 		bc.verifyTransactionsSign(&tss)
@@ -102,15 +103,15 @@ func (bc *blockchain) Transfer(tss []Transaction,send Sender) {
 	if rewardTs.TxHash != nil {
 		tss = append(tss, rewardTs)
 	}
-	bc.addBlockchain(tss,send)
+	bc.addBlockchain(tss, send)
 }
 
 //创建UTXO交易实例
-func (bc *blockchain) CreateTransaction(from, to string, amount string,send Sender)  {
-
+func (bc *blockchain) CreateTransaction(from, to string, amount string, send Sender) {
 	//判断一下是否已生成创世区块
 	if len(bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket)) == 0 {
-		log.Fatal("还没有生成创世区块，不可进行转账操作 !")
+		log.Error("还没有生成创世区块，不可进行转账操作 !")
+		return
 	}
 	if len(bc.BD.View([]byte(RewardAddrMapping), database.AddrBucket)) == 0 {
 		log.Warn("没有设置挖矿地址，如果挖出区块将不会给予奖励代币!")
@@ -120,18 +121,22 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string,send Send
 	amountSlice := []int{}
 	err := json.Unmarshal([]byte(from), &fromSlice)
 	if err != nil {
-		log.Fatal("json err:", err)
+		log.Error("json err:", err)
+		return
 	}
 	err = json.Unmarshal([]byte(to), &toSlice)
 	if err != nil {
-		log.Fatal("json err:", err)
+		log.Error("json err:", err)
+		return
 	}
 	err = json.Unmarshal([]byte(amount), &amountSlice)
 	if err != nil {
-		log.Fatal("json err:", err)
+		log.Error("json err:", err)
+		return
 	}
 	if len(fromSlice) != len(toSlice) || len(fromSlice) != len(amountSlice) {
-		log.Fatal("转账数组长度不一致")
+		log.Error("转账数组长度不一致")
+		return
 	}
 
 	for i, v := range fromSlice {
@@ -164,7 +169,7 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string,send Send
 		}
 	}
 	for i, v := range amountSlice {
-		if v<0 {
+		if v < 0 {
 			log.Error("转账金额不可小于0，已将此笔交易剔除")
 			if i < len(fromSlice)-1 {
 				fromSlice = append(fromSlice[:i], fromSlice[i+1:]...)
@@ -178,13 +183,12 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string,send Send
 		}
 	}
 
-
 	var tss []Transaction
 	wallets := NewWallets(bc.BD)
 	for index, fromAddress := range fromSlice {
-		fromKeys,ok := wallets.Wallets[fromAddress]
+		fromKeys, ok := wallets.Wallets[fromAddress]
 		if !ok {
-			log.Errorf("没有找到地址%s所对应的公钥,跳过此笔交易\n", fromAddress)
+			log.Errorf("没有找到地址%s所对应的公钥,跳过此笔交易", fromAddress)
 			continue
 		}
 		toKeysPublicKeyHash := getPublicKeyHashFromAddress(toSlice[index])
@@ -196,7 +200,7 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string,send Send
 		//获取数据库中的utxo
 		utxos := u.findUTXOFromAddress(fromAddress)
 		if len(utxos) == 0 {
-			log.Errorf("%s 余额为0", fromAddress)
+			log.Errorf("%s 余额为0,不能进行转帐操作", fromAddress)
 			return
 		}
 		//将utxos添加上未打包进区块的交易信息
@@ -252,7 +256,7 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string,send Send
 			}
 		}
 		if amount < amountSlice[index] {
-			log.Errorf(" 第%d笔交易%s余额不足\n", index+1, fromAddress)
+			log.Errorf(" 第%d笔交易%s余额不足", index+1, fromAddress)
 			continue
 		}
 		ts := Transaction{nil, newTXInput, newTXOutput[:]}
@@ -346,6 +350,9 @@ func (bc *blockchain) findAllUTXOs() map[string][]*UTXO {
 	bcIterator := NewBlockchainIterator(bc)
 	for {
 		currentBlock := bcIterator.Next()
+		if currentBlock == nil {
+			return nil
+		}
 		//必须倒序 否则有的已花费不会被扣掉
 		for i := len(currentBlock.Transactions) - 1; i >= 0; i-- {
 			var utxos = []*UTXO{}
@@ -387,12 +394,12 @@ func (bc *blockchain) newGenesisBlockchain(transaction []Transaction) {
 }
 
 //进行挖矿操作
-func (bc *blockchain) addBlockchain(transaction []Transaction,send Sender) {
+func (bc *blockchain) addBlockchain(transaction []Transaction, send Sender) {
 	preBlockbyte := bc.BD.View(bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket), database.BlockBucket)
 	preBlock := Block{}
 	preBlock.Deserialize(preBlockbyte)
 	height := preBlock.Height + 1
-	nb, err := newBlock(transaction, bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket), height)
+	nb, err := mineBlock(transaction, bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket), height)
 	if err != nil {
 		log.Warn(err)
 		return
@@ -409,20 +416,27 @@ func (bc *blockchain) addBlockchain(transaction []Transaction,send Sender) {
 
 //添加区块信息到数据库，并更新lastHash
 func (bc *blockchain) AddBlock(block *Block) {
-	//如果是创世区块直接存入数据库,不是的话该区块高度需要比当前高度大
-	if block.Height == 1 {
-		bc.BD.Put(block.Hash, block.Serialize(), database.BlockBucket)
+	bc.BD.Put(block.Hash, block.Serialize(), database.BlockBucket)
+	bci := NewBlockchainIterator(bc)
+	currentBlock := bci.Next()
+	if currentBlock == nil || currentBlock.Height < block.Height  {
 		bc.BD.Put([]byte(LastBlockHashMapping), block.Hash, database.BlockBucket)
-	} else {
-		bci := NewBlockchainIterator(bc)
-		currentBlock := bci.Next()
-		if currentBlock.Height < block.Height {
-			bc.BD.Put(block.Hash, block.Serialize(), database.BlockBucket)
-			bc.BD.Put([]byte(LastBlockHashMapping), block.Hash, database.BlockBucket)
-		} else {
-			log.Warn("区块高度相同或者小于当前高度，不予存入数据库")
-		}
 	}
+
+	////如果是创世区块直接存入数据库,不是的话该区块高度需要比当前高度大
+	//if block.Height == 1 {
+	//	bc.BD.Put(block.Hash, block.Serialize(), database.BlockBucket)
+	//	bc.BD.Put([]byte(LastBlockHashMapping), block.Hash, database.BlockBucket)
+	//} else {
+	//	bci := NewBlockchainIterator(bc)
+	//	currentBlock := bci.Next()
+	//	if currentBlock.Height < block.Height {
+	//		bc.BD.Put(block.Hash, block.Serialize(), database.BlockBucket)
+	//		bc.BD.Put([]byte(LastBlockHashMapping), block.Hash, database.BlockBucket)
+	//	} else {
+	//		log.Warn("区块高度相同或者小于当前高度，不予存入数据库")
+	//	}
+	//}
 }
 
 //数字签名
@@ -544,6 +558,10 @@ func (bc *blockchain) PrintAllBlockInfo() {
 	blcIterator := NewBlockchainIterator(bc)
 	for {
 		block := blcIterator.Next()
+		if block == nil {
+			log.Error("还未生成创世区块!")
+			return
+		}
 		fmt.Println("========================================================================================================")
 		fmt.Printf("本块hash         %x\n", block.Hash)
 		fmt.Println("  	------------------------------交易数据------------------------------")

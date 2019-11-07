@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"github.com/corgi-kx/blockchain_golang/database"
-	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	log "github.com/corgi-kx/logcustom"
 )
 
 type addressList [][]byte
@@ -58,10 +58,15 @@ func (w *wallets) GenerateWallet(bd *database.BlockchainDB,keys func([]string) *
 	w.storage(addressByte, bitcoinKeys, bd)
 	//将地址存入实例
 	address = string(addressByte)
-	for _, v := range bitcoinKeys.MnemonicWord {
-		mnemonicWord += v + " "
+	mnemonicWord = "["
+	for i, v := range bitcoinKeys.MnemonicWord {
+		mnemonicWord += "\"" +v + "\""
+		if i != len(bitcoinKeys.MnemonicWord) -1 {
+			mnemonicWord +=","
+		}else  {
+			mnemonicWord +="]"
+		}
 	}
-	//w.Wallets[address] = bitcoinKeys
 	return
 }
 

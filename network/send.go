@@ -4,12 +4,21 @@ package network
 import (
 	"bufio"
 	"github.com/corgi-kx/blockchain_golang/blc"
-	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	log "github.com/corgi-kx/logcustom"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
 )
 
 type Send struct {
+}
+
+func (s Send)SendSignOutToPeers() {
+	ss:="节点:"+localAddr + "已退出网络"
+	m:=myerror{ss,localAddr}
+	data:=jointMessage(cMyError,m.serialize())
+	for _,v :=range peerPool {
+		s.SendMessage(v,data)
+	}
 }
 
 //像其他P2P节点发送高度信息
@@ -51,7 +60,7 @@ func (Send) SendMessage(peer peer.AddrInfo, data []byte) {
 		log.Error("Connection failed:", err)
 	}
 	//打开一个流，向流写入信息后关闭
-	stream, err := localHost.NewStream(ctx, peer.ID, protocol.ID(PROTOCOL_ID))
+	stream, err := localHost.NewStream(ctx, peer.ID, protocol.ID(ProtocolID))
 	if err != nil {
 		log.Debug("Stream open failed", err)
 	} else {

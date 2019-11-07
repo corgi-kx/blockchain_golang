@@ -7,9 +7,8 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/gob"
-	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	log "github.com/corgi-kx/logcustom"
 	"github.com/corgi-kx/blockchain_golang/util"
-	"github.com/golang/crypto/ripemd160"
 	"math/big"
 	"os"
 )
@@ -53,10 +52,6 @@ func (b *bitcoinKeys) newKeyPair() {
 	if err != nil {
 		log.Panic(err)
 	}
-	//b.PrivateKey, err = ecdsa.GenerateKey(curve, rand.Reader)
-	//if err != nil {
-	//	log.Panic(err)
-	//}
 	b.PublicKey = append(b.PrivateKey.PublicKey.X.Bytes(), b.PrivateKey.PublicKey.Y.Bytes()...)
 }
 
@@ -70,7 +65,7 @@ func (b bitcoinKeys) jointSpeed() []byte {
 }
 //获取中文种子
 func  getChineseMnemonicWord() []string{
-	file,err:=os.Open("./blc/chinese_mnemonic_world.txt")
+	file,err:=os.Open(ChineseMnwordPath)
 	//file,err:=os.Open("D:/programming/golang/GOPATH/src/github.com/corgi-kx/blockchain_golang/blc/chinese_mnemonic_world.txt")
 	if err != nil {
 		log.Panic(err)
@@ -110,15 +105,6 @@ func paddedAppend(size uint, dst, src []byte) []byte {
 	return append(dst, src...)
 }
 
-//func byteString(b []byte) (s string) {
-//	s = ""
-//	for i := 0; i < len(b); i++ {
-//		//s += fmt.Sprintf("%02X", b[i])
-//		s += fmt.Sprintf("%02X", b[i])
-//	}
-//	return s
-//}
-
 func (b *bitcoinKeys) getAddress() []byte {
 	//1.ripemd160(sha256(publickey))
 	ripPubKey := generatePublicKeyHash(b.PublicKey)
@@ -157,7 +143,7 @@ func  (v *bitcoinKeys) Deserialize(d []byte){
 
 func generatePublicKeyHash(publicKey []byte) []byte {
 	sha256PubKey := sha256.Sum256(publicKey)
-	r := ripemd160.New()
+	r := util.NewRipemd160()
 	r.Reset()
 	r.Write(sha256PubKey[:])
 	ripPubKey := r.Sum(nil)

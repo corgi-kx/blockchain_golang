@@ -8,5 +8,5 @@ import (
 func (cli *Cli) getBalance(address string) {
 	bc := block.NewBlockchain()
 	balance := bc.GetBalance(address)
-	fmt.Printf("用户:%s的余额为：%d\n", address, balance)
+	fmt.Printf("地址:%s的余额为：%d\n", address, balance)
 }

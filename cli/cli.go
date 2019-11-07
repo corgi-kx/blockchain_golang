@@ -1,189 +1,114 @@
 package cli
 
 import (
-	"flag"
+	"bufio"
 	"fmt"
-	log "github.com/corgi-kx/blockchain_golang/logcustom"
+	log "github.com/corgi-kx/logcustom"
 	"os"
 	"strconv"
+	"strings"
 )
-
-var nodeID int
 
 type Cli struct {
 }
 
 func printUsage() {
+	fmt.Println("----------------------------------------------------------------------------- ")
 	fmt.Println("Usage:")
+	fmt.Println("\thelp                                              打印命令行说明")
 	fmt.Println("\tgenesis  -a DATA  -v DATA                         生成创世区块")
-	fmt.Println("\tgenerateWallet                                    生成钱包")
 	fmt.Println("\tsetRewardAddr -a DATA                             设置挖矿奖励地址")
-	fmt.Println("\tibMnemonicword -m                                 根据助记词导入钱包")
-	fmt.Println("\tprintAllAddr                                      查看本地存在的地址信息")
+	fmt.Println("\tgenerateWallet                                    创建新钱包")
+	fmt.Println("\timportMnword -m DATA                              根据助记词导入钱包")
 	fmt.Println("\tprintAllWallets                                   查看本地存在的钱包信息")
+	fmt.Println("\tprintAllAddr                                      查看本地存在的地址信息")
 	fmt.Println("\tgetBalance  -a DATA                               查看用户余额")
 	fmt.Println("\ttransfer -from DATA -to DATA -amount DATA         进行转账操作")
-	fmt.Println("\tresetUTXOdb                                       遍历区块数据，重置UTXO数据库")
-	fmt.Println("\tprintAllBlock                                     打印所有区块信息")
-	os.Exit(0)
+	fmt.Println("\tprintAllBlock                                     查看所有区块信息")
+	fmt.Println("\tresetUTXODB                                       遍历区块数据，重置UTXO数据库")
+	fmt.Println("------------------------------------------------------------------------------")
 }
-
-func isValidArgs() {
-	if len(os.Args) < 2 {
-		printUsage()
-	}
-}
-
-
-func init() {
-
-
-
-	id := os.Getenv("NODE_ID")
-	if id == "" {
-		fmt.Println("请设置节点端口号！")
-		os.Exit(1)
-	}
-	var err error
-	nodeID ,err = strconv.Atoi(id)
-	if err != nil {
-		log.Panic("端口号转换失败,请检查是否是数字!,",err)
-	}
-	fmt.Printf("当前节点端口号:%d\n",nodeID)
-
-	//将日志输出到指定文件
-	file, err := os.OpenFile(fmt.Sprintf("log%d.txt",nodeID), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	if err != nil {
-		log.Error(err)
-	}
-	log.SetOutputAll(file)
-	log.Debug("NODE_ID:", nodeID)
-}
-
-
 
 func New() *Cli {
 	return &Cli{}
 }
 
 func (cli *Cli) Run() {
-	isValidArgs()
-	flagGenesisBlockchain := flag.NewFlagSet("genesis", flag.ExitOnError)
-	cmdGenesisBlockchainAddress := flagGenesisBlockchain.String("a", "", "添加创世区块用户地址")
-	cmdGenesisBlockchainValue := flagGenesisBlockchain.Int("v", 0, "添加创世区块金额数量")
-	flagGenerateWallet := flag.NewFlagSet("generateWallet", flag.ExitOnError)
-	flagSetRewardAddress := flag.NewFlagSet("setRewardAddr", flag.ExitOnError)
-	flagStartNode := flag.NewFlagSet("startNode", flag.ExitOnError)
-	cmdSetRewardAddress := flagSetRewardAddress.String("a", "", "设置挖矿奖励地址")
-	flagImportWalletByMnemonicword := flag.NewFlagSet("ibMnemonicword", flag.ExitOnError)
-	cmdMnemonicword := flagImportWalletByMnemonicword.String("m", "", "助记词信息")
-	flagPrintAllAddress := flag.NewFlagSet("printAllAddr", flag.ExitOnError)
-	flagPrintAllWallets := flag.NewFlagSet("printAllWallets", flag.ExitOnError)
-	flagGetBalance := flag.NewFlagSet("getBalance", flag.ExitOnError)
-	cmdGetBalance := flagGetBalance.String("a", "", "查看用户余额")
-	flagTransfer := flag.NewFlagSet("transfer", flag.ExitOnError)
-	cmdTransferFrom := flagTransfer.String("from", "", "发送转账账户")
-	cmdTransferTo := flagTransfer.String("to", "", "接收转账账户")
-	cmdTransferAmount := flagTransfer.String("amount", "", "转账金额")
-	flagResetUTXODatabase := flag.NewFlagSet("resetUTXOdb", flag.ExitOnError)
-	flagPrintBlock := flag.NewFlagSet("printAllBlock", flag.ExitOnError)
+	printUsage()
+	go cli.startNode()
+	cli.ReceiveCMD()
+}
 
-	switch os.Args[1] {
+func (cli Cli) ReceiveCMD() {
+	stdReader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Print("> ")
+		sendData, err := stdReader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error reading from stdin")
+			panic(err)
+		}
+		cli.userCmdHandle(sendData)
+	}
+}
+
+func (cli Cli) userCmdHandle(data string) {
+	//去除命令前后空格
+	//transfer -from [\"17L6dPWj4P4zUqwuYV3wAJcbfogwxVnefo\"] -to [\"1JZRuVD91Jgk3DCVqe216ZTSDueyizz5ZX\"] -amount [50]
+	data = strings.TrimSpace(data)
+	var cmd string
+	var context string
+	if strings.Contains(data, " ") {
+		cmd = data[:strings.Index(data, " ")]
+		context = data[strings.Index(data, " ")+1:]
+	} else {
+		cmd = data
+	}
+	switch cmd {
+	case "help":
+		printUsage()
 	case "genesis":
-		err := flagGenesisBlockchain.Parse(os.Args[2:])
+		address := getSpecifiedContent(data, "-a", "-v")
+		value := getSpecifiedContent(data, "-v", "")
+		v, err := strconv.Atoi(value)
 		if err != nil {
-			log.Panic(err)
+			log.Fatal(err)
 		}
+		cli.genesis(address, v)
 	case "generateWallet":
-		err := flagGenerateWallet.Parse(os.Args[2:])
-		if err != nil {
-			log.Panic(err)
-		}
+		cli.generateWallet()
 	case "setRewardAddr":
-		err := flagSetRewardAddress.Parse(os.Args[2:])
-		if err != nil {
-			log.Panic(err)
-		}
-	case "startNode":
-		err := flagStartNode.Parse(os.Args[2:])
-		if err != nil {
-			log.Panic(err)
-		}
-	case "ibMnemonicword":
-		err := flagImportWalletByMnemonicword.Parse(os.Args[2:])
-		if err != nil {
-			log.Panic(err)
-		}
+		addrss := getSpecifiedContent(data, "-a", "")
+		cli.setRewardAddress(addrss)
+	case "importMnword":
+		mnemonicword := getSpecifiedContent(data, "-m", "")
+		cli.importWalletByMnemonicword(mnemonicword)
 	case "printAllAddr":
-		err := flagPrintAllAddress.Parse(os.Args[2:])
-		if err != nil {
-			log.Panic(err)
-		}
+		cli.printAllAddress()
 	case "printAllWallets":
-		err := flagPrintAllWallets.Parse(os.Args[2:])
-		if err != nil {
-			log.Panic(err)
-		}
-	case "getBalance":
-		err := flagGetBalance.Parse(os.Args[2:])
-		if err != nil {
-			log.Panic(err)
-		}
-	case "transfer":
-		err := flagTransfer.Parse(os.Args[2:])
-		if err != nil {
-			log.Panic(err)
-		}
-	case "resetUTXOdb":
-		err := flagResetUTXODatabase.Parse(os.Args[2:])
-		if err != nil {
-			log.Panic(err)
-		}
+		cli.printAllWallets()
 	case "printAllBlock":
-		err := flagPrintBlock.Parse(os.Args[2:])
-		if err != nil {
-			log.Panic(err)
-		}
+		cli.printAllBlock()
+	case "getBalance":
+		address := getSpecifiedContent(data, "-a", "")
+		cli.getBalance(address)
+	case "resetUTXODB":
+		cli.resetUTXODB()
+	case "transfer":
+		fromString := (context[strings.Index(context, "-from")+len("-from") : strings.Index(context, "-to")])
+		toString := strings.TrimSpace(context[strings.Index(context, "-to")+len("-to") : strings.Index(context, "-amount")])
+		amountString := strings.TrimSpace(context[strings.Index(context, "-amount")+len("-amount"):])
+		cli.transfer(fromString, toString, amountString)
 	default:
+		fmt.Println("无此命令!")
 		printUsage()
 	}
+}
 
-	if flagGenesisBlockchain.Parsed() {
-		if *cmdGenesisBlockchainAddress == "" || *cmdGenesisBlockchainValue == 0 {
-			printUsage()
-		}
-		cli.genesis(*cmdGenesisBlockchainAddress, *cmdGenesisBlockchainValue)
-	} else if flagGenerateWallet.Parsed() {
-		cli.generateWallet()
-	} else if flagSetRewardAddress.Parsed() {
-		if *cmdSetRewardAddress == "" {
-			printUsage()
-		}
-		cli.setRewardAddress(*cmdSetRewardAddress)
-	} else if flagStartNode.Parsed() {
-		cli.startNode()
-	} else if flagImportWalletByMnemonicword.Parsed() {
-		if *cmdMnemonicword == "" {
-			printUsage()
-		}
-		cli.importWalletByMnemonicword(*cmdMnemonicword)
-	}else if flagPrintAllAddress.Parsed() {
-		cli.printAllAddress()
-	}  else if flagPrintAllWallets.Parsed() {
-		cli.printAllWallets()
-	}else if flagGetBalance.Parsed() {
-		if *cmdGetBalance == "" {
-			printUsage()
-		}
-		cli.getBalance(*cmdGetBalance)
-	} else if flagTransfer.Parsed() {
-		if *cmdTransferFrom == "" || *cmdTransferTo == "" || *cmdTransferAmount == "" {
-			printUsage()
-		}
-		cli.transfer(*cmdTransferFrom, *cmdTransferTo, *cmdTransferAmount)
-	} else if flagResetUTXODatabase.Parsed() {
-		cli.resetUTXODB()
-	} else if flagPrintBlock.Parsed() {
-		cli.printAllBlock()
+//截取data字符串中,标签为tag的内容
+func getSpecifiedContent(data, tag, end string) string {
+	if end != "" {
+		return strings.TrimSpace(data[strings.Index(data, tag)+len(tag) : strings.Index(data, end)])
 	}
+	return strings.TrimSpace(data[strings.Index(data, tag)+len(tag):])
 }

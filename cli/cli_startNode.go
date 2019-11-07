@@ -1,7 +1,9 @@
 package cli
 
-import "github.com/corgi-kx/blockchain_golang/network"
+import (
+	"github.com/corgi-kx/blockchain_golang/network"
+)
 
-func (cli *Cli) startNode() {
-	network.StartNode(nodeID)
+func (cli Cli) startNode() {
+	network.StartNode(cli)
 }
