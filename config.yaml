@@ -14,6 +14,8 @@ network:
   listen_host: "192.168.0.164"
   #本地监听端口
   listen_port: "9000"
+
   rendezvous_string: "meetme"
   #p2p网络连接通道名称
   protocol_id: "/chain/1.1.0"
+
