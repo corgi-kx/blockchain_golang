@@ -1,3 +1,6 @@
+/*
+	本包是作为对blot数据库封装的一个存在
+*/
 package database
 
 import (
@@ -6,6 +9,7 @@ import (
 	log "github.com/corgi-kx/logcustom"
 )
 
+//存入数据
 func (bd *BlockchainDB) Put(k, v []byte, bt BucketType) {
 	var DBFileName = "blockchain_" + ListenPort+ ".db"
 	db, err := bolt.Open(DBFileName, 0600, nil)
@@ -34,6 +38,7 @@ func (bd *BlockchainDB) Put(k, v []byte, bt BucketType) {
 	}
 }
 
+//查看数据
 func (bd *BlockchainDB) View(k []byte, bt BucketType) []byte {
 	var DBFileName = "blockchain_" + ListenPort + ".db"
 	db, err := bolt.Open(DBFileName, 0600, nil)
@@ -62,6 +67,7 @@ func (bd *BlockchainDB) View(k []byte, bt BucketType) []byte {
 	return realResult
 }
 
+//删除数据
 func (bd *BlockchainDB) Delete(k []byte, bt BucketType) bool {
 	var DBFileName = "blockchain_" + ListenPort + ".db"
 	db, err := bolt.Open(DBFileName, 0600, nil)
@@ -88,6 +94,7 @@ func (bd *BlockchainDB) Delete(k []byte, bt BucketType) bool {
 	return true
 }
 
+//删除仓库
 func (bd *BlockchainDB) DeleteBucket(bt BucketType) bool {
 	var DBFileName = "blockchain_" + ListenPort + ".db"
 	db, err := bolt.Open(DBFileName, 0600, nil)

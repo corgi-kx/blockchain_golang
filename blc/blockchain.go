@@ -8,53 +8,66 @@ import (
 	"github.com/corgi-kx/blockchain_golang/database"
 	log "github.com/corgi-kx/logcustom"
 	"math/big"
-
 	"os"
+
 	"time"
 )
 
 type blockchain struct {
-	BD *database.BlockchainDB
+	BD *database.BlockchainDB //封装的blot结构体
 }
 
+//创建区块链实例
 func NewBlockchain() *blockchain {
-	//if !database.IsBlotExist(nodeID) {
-	//	log.Fatal(" 没有找到对应的数据库！")
-	//}
 	blockchain := blockchain{}
 	bd := database.New()
 	blockchain.BD = bd
 	return &blockchain
 }
 
+//创建创世区块交易信息
 func (bc *blockchain) CreataGenesisTransaction(address string, value int, send Sender) {
+	//判断地址格式是否正确
 	if !IsVaildBitcoinAddress(address) {
 		log.Errorf("地址格式不正确:%s\n", address)
 		return
 	}
 	//创世区块数据
 	txi := TXInput{[]byte{}, -1, nil, nil}
+	//本地一定要存创世区块地址的公私钥信息
 	wallets := NewWallets(bc.BD)
 	genesisKeys, ok := wallets.Wallets[address]
 	if !ok {
-		log.Fatal("没有找到地址对应的公钥信息")
+		log.Fatal("没有找到地址对应的公私钥信息")
 	}
-
-	//通过地址获取rip160(sha256(publickey))
+	//通过地址获得rip160(sha256(publickey))
 	publicKeyHash := generatePublicKeyHash(genesisKeys.PublicKey)
 	txo := TXOutput{value, publicKeyHash}
 	ts := Transaction{nil, []TXInput{txi}, []TXOutput{txo}}
 	ts.hash()
 	tss := []Transaction{ts}
+	//开始生成区块链的第一个区块
 	bc.newGenesisBlockchain(tss)
-	//创世区块后,向全网节点发送高度1
+	//创世区块后,向全网节点发送当前区块链高度1
 	send.SendVersionToPeers(1)
 	fmt.Println("已成生成创世区块")
-	//重置未花费数据库，将创世数据存入
+	//重置utxo数据库，将创世数据存入
 	utxos := UTXOHandle{bc}
 	utxos.ResetUTXODataBase()
 }
 
+func (bc *blockchain) newGenesisBlockchain(transaction []Transaction) {
+	//判断一下是否已生成创世区块
+	if len(bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket)) != 0 {
+		log.Fatal("不可重复生成创世区块")
+	}
+	//生成创世区块
+	genesisBlock := newGenesisBlock(transaction)
+	//添加到数据库中
+	bc.AddBlock(genesisBlock)
+}
+
+//创建挖矿奖励地址的交易信息
 func (bc *blockchain) CreataRewardTransaction(address string) Transaction {
 	if address == "" {
 		log.Warn("没有设置挖矿奖励地址，如果出块则不会给予奖励代币")
@@ -72,40 +85,6 @@ func (bc *blockchain) CreataRewardTransaction(address string) Transaction {
 	return ts
 }
 
-//设置挖矿奖励地址
-func (bc *blockchain) SetRewardAddress(address string) {
-	bc.BD.Put([]byte(RewardAddrMapping), []byte(address), database.AddrBucket)
-}
-
-//交易转账
-func (bc *blockchain) Transfer(tss []Transaction, send Sender) {
-	//tss := bc.CreateTransaction(fromSlice, toSlice, amountSlice)
-	//if tss == nil {
-	//	log.Error("没有符合规则的交易，不进行出块操作")
-	//	return
-	//}
-	//进行数字签名验证
-	if !isGenesisTransaction(tss) {
-		bc.verifyTransactionsSign(&tss)
-		if len(tss) == 0 {
-			log.Error("没有通过的数字签名验证，不予挖矿出块！")
-			return
-		}
-	}
-	//进行余额验证
-	bc.VerifyTransBalance(&tss)
-	if len(tss) == 0 {
-		log.Error("没有通过余额验证的交易，不予挖矿出块！")
-		return
-	}
-	//如果设置了奖励地址，则挖矿成功后给予奖励代币
-	rewardTs := bc.CreataRewardTransaction(string(bc.BD.View([]byte(RewardAddrMapping), database.AddrBucket)))
-	if rewardTs.TxHash != nil {
-		tss = append(tss, rewardTs)
-	}
-	bc.addBlockchain(tss, send)
-}
-
 //创建UTXO交易实例
 func (bc *blockchain) CreateTransaction(from, to string, amount string, send Sender) {
 	//判断一下是否已生成创世区块
@@ -113,12 +92,16 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string, send Sen
 		log.Error("还没有生成创世区块，不可进行转账操作 !")
 		return
 	}
+	//检测是否设置了挖矿地址,没设置的话会给出提示
 	if len(bc.BD.View([]byte(RewardAddrMapping), database.AddrBucket)) == 0 {
 		log.Warn("没有设置挖矿地址，如果挖出区块将不会给予奖励代币!")
 	}
+
 	fromSlice := []string{}
 	toSlice := []string{}
 	amountSlice := []int{}
+
+	//对传入的信息进行校验检测
 	err := json.Unmarshal([]byte(from), &fromSlice)
 	if err != nil {
 		log.Error("json err:", err)
@@ -197,7 +180,7 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string, send Sen
 			return
 		}
 		u := UTXOHandle{bc}
-		//获取数据库中的utxo
+		//获取数据库中的未消费的utxo
 		utxos := u.findUTXOFromAddress(fromAddress)
 		if len(utxos) == 0 {
 			log.Errorf("%s 余额为0,不能进行转帐操作", fromAddress)
@@ -206,7 +189,7 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string, send Sen
 		//将utxos添加上未打包进区块的交易信息
 		if tss != nil {
 			for _, ts := range tss {
-				//先添加未花费utxo 如果有的话就不添加
+			//先添加未花费utxo 如果有的话就不添加
 			tagVout:
 				for index, vOut := range ts.Vout {
 					if bytes.Compare(vOut.PublicKeyHash, generatePublicKeyHash(fromKeys.PublicKey)) != 0 {
@@ -231,6 +214,7 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string, send Sen
 			}
 		}
 
+		//打包交易的核心操作
 		newTXInput := []TXInput{}
 		newTXOutput := []TXOutput{}
 		var amount int
@@ -255,6 +239,7 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string, send Sen
 				break
 			}
 		}
+		//如果余额不足则跳过不会打包进入交易
 		if amount < amountSlice[index] {
 			log.Errorf(" 第%d笔交易%s余额不足", index+1, fromAddress)
 			continue
@@ -271,7 +256,36 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string, send Sen
 	send.SendTransToPeers(tss)
 }
 
-//检验交易余额是否足够,如果不够则剔除
+//交易转账
+func (bc *blockchain) Transfer(tss []Transaction, send Sender) {
+	//tss := bc.CreateTransaction(fromSlice, toSlice, amountSlice)
+	//if tss == nil {
+	//	log.Error("没有符合规则的交易，不进行出块操作")
+	//	return
+	//}
+	//进行数字签名验证
+	if !isGenesisTransaction(tss) {
+		bc.verifyTransactionsSign(&tss)
+		if len(tss) == 0 {
+			log.Error("没有通过的数字签名验证，不予挖矿出块！")
+			return
+		}
+	}
+	//进行余额验证
+	bc.VerifyTransBalance(&tss)
+	if len(tss) == 0 {
+		log.Error("没有通过余额验证的交易，不予挖矿出块！")
+		return
+	}
+	//如果设置了奖励地址，则挖矿成功后给予奖励代币
+	rewardTs := bc.CreataRewardTransaction(string(bc.BD.View([]byte(RewardAddrMapping), database.AddrBucket)))
+	if rewardTs.TxHash != nil {
+		tss = append(tss, rewardTs)
+	}
+	bc.addBlockchain(tss, send)
+}
+
+//校验交易余额是否足够,如果不够则剔除
 func (bc *blockchain) VerifyTransBalance(tss *[]Transaction) {
 	//获取每个地址的UTXO余额，并存入字典中
 	var balance = map[string]int{}
@@ -330,67 +344,9 @@ circle:
 	log.Debug("已完成UTXO交易信息余额验证")
 }
 
-func (bc *blockchain) GetBalance(address string) int {
-	if !IsVaildBitcoinAddress(address) {
-		log.Errorf("地址格式不正确：%s\n", address)
-		os.Exit(0)
-	}
-	var balance int
-	uHandle := UTXOHandle{bc}
-	utxos := uHandle.findUTXOFromAddress(address)
-	for _, v := range utxos {
-		balance += v.Vout.Value
-	}
-	return balance
-}
-
-func (bc *blockchain) findAllUTXOs() map[string][]*UTXO {
-	utxosMap := make(map[string][]*UTXO)
-	txInputmap := make(map[string][]TXInput)
-	bcIterator := NewBlockchainIterator(bc)
-	for {
-		currentBlock := bcIterator.Next()
-		if currentBlock == nil {
-			return nil
-		}
-		//必须倒序 否则有的已花费不会被扣掉
-		for i := len(currentBlock.Transactions) - 1; i >= 0; i-- {
-			var utxos = []*UTXO{}
-			ts := currentBlock.Transactions[i]
-			for _, vInt := range ts.Vint {
-				txInputmap[string(vInt.TxHash)] = append(txInputmap[string(vInt.TxHash)], vInt)
-			}
-
-		VoutTag:
-			for index, vOut := range ts.Vout {
-				if txInputmap[string(ts.TxHash)] == nil {
-					utxos = append(utxos, &UTXO{ts.TxHash, index, vOut})
-				} else {
-					for _, vIn := range txInputmap[string(ts.TxHash)] {
-						if vIn.Index == index {
-							continue VoutTag
-						}
-					}
-					utxos = append(utxos, &UTXO{ts.TxHash, index, vOut})
-				}
-				utxosMap[string(ts.TxHash)] = utxos
-			}
-		}
-
-		if isGenesisBlock(currentBlock) {
-			break
-		}
-	}
-	return utxosMap
-}
-
-func (bc *blockchain) newGenesisBlockchain(transaction []Transaction) {
-	//判断一下是否已生成创世区块
-	if len(bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket)) != 0 {
-		log.Fatal("不可重复生成创世区块")
-	}
-	genesisBlock := newGenesisBlock(transaction)
-	bc.AddBlock(genesisBlock)
+//设置挖矿奖励地址
+func (bc *blockchain) SetRewardAddress(address string) {
+	bc.BD.Put([]byte(RewardAddrMapping), []byte(address), database.AddrBucket)
 }
 
 //进行挖矿操作
@@ -411,7 +367,6 @@ func (bc *blockchain) addBlockchain(transaction []Transaction, send Sender) {
 	log.Debug("已生成新区块，将当前区块高度发送至网络中其他P2P节点")
 	//挖矿出块后 发送高度信息到其他节点
 	send.SendVersionToPeers(nb.Height)
-
 }
 
 //添加区块信息到数据库，并更新lastHash
@@ -419,7 +374,7 @@ func (bc *blockchain) AddBlock(block *Block) {
 	bc.BD.Put(block.Hash, block.Serialize(), database.BlockBucket)
 	bci := NewBlockchainIterator(bc)
 	currentBlock := bci.Next()
-	if currentBlock == nil || currentBlock.Height < block.Height  {
+	if currentBlock == nil || currentBlock.Height < block.Height {
 		bc.BD.Put([]byte(LastBlockHashMapping), block.Hash, database.BlockBucket)
 	}
 
@@ -439,7 +394,7 @@ func (bc *blockchain) AddBlock(block *Block) {
 	//}
 }
 
-//数字签名
+//对交易信息进行数字签名
 func (bc *blockchain) signatureTransactions(tss []Transaction, wallets *wallets) {
 	for i, _ := range tss {
 		copyTs := tss[i].customCopy()
@@ -447,15 +402,20 @@ func (bc *blockchain) signatureTransactions(tss []Transaction, wallets *wallets)
 			//获取地址
 			bk := bitcoinKeys{nil, tss[i].Vint[index].PublicKey, nil}
 			address := bk.getAddress()
+			//从数据库或者为打包进数据库的交易数组中,找到vint所对应的交易信息
 			trans, err := bc.findTransaction(tss, tss[i].Vint[index].TxHash)
 			if err != nil {
 				log.Fatal(err)
 			}
+
 			copyTs.Vint[index].Signature = nil
+			//将拷贝后的交易里面的公钥替换为公钥hash
 			copyTs.Vint[index].PublicKey = trans.Vout[tss[i].Vint[index].Index].PublicKeyHash
+			//对拷贝后的交易进行整体hash
 			copyTs.TxHash = copyTs.hashSign()
 			copyTs.Vint[index].PublicKey = nil
 			privKey := wallets.Wallets[string(address)].PrivateKey
+			//进行签名操作
 			tss[i].Vint[index].Signature = ellipticCurveSign(privKey, copyTs.TxHash)
 		}
 	}
@@ -471,6 +431,7 @@ circle:
 			if err != nil {
 				log.Fatal(err)
 			}
+			//先验证输入地址的公钥hash与指定的utxo输出的公钥hash是否相同
 			if !bytes.Equal(findTs.Vout[Vin.Index].PublicKeyHash, generatePublicKeyHash(Vin.PublicKey)) {
 				log.Errorf("签名验证失败 %x笔交易的vin并非是本人", (*tss)[i].TxHash)
 				*tss = append((*tss)[:i], (*tss)[i+1:]...)
@@ -480,6 +441,7 @@ circle:
 			copyTs.Vint[index].PublicKey = findTs.Vout[Vin.Index].PublicKeyHash
 			copyTs.TxHash = copyTs.hashSign()
 			copyTs.Vint[index].PublicKey = nil
+			//进行签名验证
 			if !ellipticCurveVerify(Vin.PublicKey, Vin.Signature, copyTs.TxHash) {
 				log.Errorf("此笔交易：%x没通过签名验证", (*tss)[i].TxHash)
 				*tss = append((*tss)[:i], (*tss)[i+1:]...)
@@ -551,6 +513,62 @@ func (bc *blockchain) GetBlockHashByHeight(height int) []byte {
 //通过区块hash获取区块信息
 func (bc *blockchain) GetBlockByHash(hash []byte) []byte {
 	return bc.BD.View(hash, database.BlockBucket)
+}
+
+//传入地址 返回地址余额信息
+func (bc *blockchain) GetBalance(address string) int {
+	if !IsVaildBitcoinAddress(address) {
+		log.Errorf("地址格式不正确：%s\n", address)
+		os.Exit(0)
+	}
+	var balance int
+	uHandle := UTXOHandle{bc}
+	utxos := uHandle.findUTXOFromAddress(address)
+	for _, v := range utxos {
+		balance += v.Vout.Value
+	}
+	return balance
+}
+
+//查找数据库中全部未花费的UTXO
+func (bc *blockchain) findAllUTXOs() map[string][]*UTXO {
+	utxosMap := make(map[string][]*UTXO)
+	txInputmap := make(map[string][]TXInput)
+	bcIterator := NewBlockchainIterator(bc)
+	for {
+		currentBlock := bcIterator.Next()
+		if currentBlock == nil {
+			return nil
+		}
+		//必须倒序 否则有的已花费不会被扣掉
+		for i := len(currentBlock.Transactions) - 1; i >= 0; i-- {
+			var utxos = []*UTXO{}
+			ts := currentBlock.Transactions[i]
+			for _, vInt := range ts.Vint {
+				txInputmap[string(vInt.TxHash)] = append(txInputmap[string(vInt.TxHash)], vInt)
+			}
+
+		VoutTag:
+			for index, vOut := range ts.Vout {
+				if txInputmap[string(ts.TxHash)] == nil {
+					utxos = append(utxos, &UTXO{ts.TxHash, index, vOut})
+				} else {
+					for _, vIn := range txInputmap[string(ts.TxHash)] {
+						if vIn.Index == index {
+							continue VoutTag
+						}
+					}
+					utxos = append(utxos, &UTXO{ts.TxHash, index, vOut})
+				}
+				utxosMap[string(ts.TxHash)] = utxos
+			}
+		}
+
+		if isGenesisBlock(currentBlock) {
+			break
+		}
+	}
+	return utxosMap
 }
 
 //打印区块链详细信息

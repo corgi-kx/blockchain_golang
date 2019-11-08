@@ -11,7 +11,6 @@ type getHash struct {
 	AddrFrom string
 }
 
-
 func (v getHash) serialize() []byte {
 	var result bytes.Buffer
 	encoder := gob.NewEncoder(&result)

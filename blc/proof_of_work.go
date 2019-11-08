@@ -9,18 +9,22 @@ import (
 	"math/big"
 )
 
+//工作量证明(pow)结构体
 type proofOfWork struct {
 	*Block
 	Target *big.Int
 }
 
+//获取POW实例
 func NewProofOfWork(block *Block) *proofOfWork {
 	target := big.NewInt(1)
+	//返回1 << 256-TargetBits 的一个大数
 	target.Lsh(target, 256-TargetBits)
 	pow := &proofOfWork{block, target}
 	return pow
 }
 
+//进行hash运算,获取到当前区块的hash值
 func (p *proofOfWork) run() (int,[]byte,error) {
 	nonce := 0
 	var hashByte [32]byte
@@ -36,6 +40,7 @@ func (p *proofOfWork) run() (int,[]byte,error) {
 		//fmt.Printf("\r current hash : %x", hashByte)
 		//将hash值转换为大数字
 		hashInt.SetBytes(hashByte[:])
+		//如果hash后的data值小于设置的挖矿难度大数字,则代表挖矿成功!
 		if hashInt.Cmp(p.Target) == -1 {
 			break
 		} else {
@@ -46,6 +51,7 @@ func (p *proofOfWork) run() (int,[]byte,error) {
 	return nonce, hashByte[:],nil
 }
 
+//检验区块是否有效
 func (p *proofOfWork) Verify() bool {
 	target := big.NewInt(1)
 	target.Lsh(target, 256-TargetBits)

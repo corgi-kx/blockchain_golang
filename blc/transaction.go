@@ -9,14 +9,16 @@ import (
 
 )
 
+//交易列表信息
 type Transaction struct {
 	TxHash []byte
 	//UTXO输入
-	Vint []TXInput
+	 Vint []TXInput
 	//UTXO输出
 	Vout []TXOutput
 }
 
+//对此笔交易的输入,输出进行hash运算后存入交易hash(txhash)
 func (t *Transaction) hash() {
 	tBytes := t.Serialize()
 	//加入随机数byte
@@ -56,7 +58,7 @@ func (t *Transaction) Serialize() []byte {
 	return result.Bytes()
 }
 
-
+//将整笔交易里的成员依次转换成字节数组,拼接成整体后 返回
 func (t *Transaction) getTransBytes() []byte {
 	if t.TxHash == nil || t.Vint == nil || t.Vout == nil{
 		log.Error("交易信息不完整，无法拼接成字节数组")
@@ -77,6 +79,7 @@ func (t *Transaction) getTransBytes() []byte {
 	return transBytes
 }
 
+//从原交易里拷贝出一个新的交易
 func (t *Transaction) customCopy() Transaction {
 	newVin := []TXInput{}
 	newVout := []TXOutput{}

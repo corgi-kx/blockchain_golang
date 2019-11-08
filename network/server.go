@@ -21,9 +21,9 @@ import (
 //key:节点ID  value:节点详细信息
 var peerPool = make(map[string]peer.AddrInfo)
 var ctx = context.Background()
-var tradePool = Transactions{}
 var send = Send{}
 
+//启动本地节点
 func StartNode(clier Clier) {
 	//先获取本地区块最新高度
 	bc := block.NewBlockchain()
@@ -59,7 +59,7 @@ func StartNode(clier Clier) {
 	go monitorP2PNodes()
 	//启一个go程去向其他p2p节点发送高度信息，来进行更新区块数据
 	go sendVersionToPeers()
-	//启动程序的命令行输出环境
+	//启动程序的命令行输入环境
 	go clier.ReceiveCMD()
 	fmt.Println("本地网络节点已启动,详细信息请查看log日志!")
 	signalHandle()

@@ -30,6 +30,7 @@ type wallets struct {
 	Wallets map[string]*bitcoinKeys
 }
 
+//创建一个新钱包实例
 func NewWallets(bd *database.BlockchainDB) *wallets {
 	w := &wallets{make(map[string]*bitcoinKeys)}
 	//如果钱包表存在，则先取出所有地址信息，在根据地址取出钱包信息
@@ -48,7 +49,8 @@ func NewWallets(bd *database.BlockchainDB) *wallets {
 	return w
 }
 
-func (w *wallets) GenerateWallet(bd *database.BlockchainDB,keys func([]string) *bitcoinKeys,s []string) (address, privKey, mnemonicWord string) {
+//生成钱包
+func (w *wallets) GenerateWallet(bd *database.BlockchainDB,keys func(s []string) *bitcoinKeys,s []string) (address, privKey, mnemonicWord string) {
 	bitcoinKeys := keys(s)
 	if bitcoinKeys == nil {
 		log.Fatal("创建钱包失败，检查助记词是否符合创建规则！")
@@ -58,6 +60,7 @@ func (w *wallets) GenerateWallet(bd *database.BlockchainDB,keys func([]string) *
 	w.storage(addressByte, bitcoinKeys, bd)
 	//将地址存入实例
 	address = string(addressByte)
+	//将助记词拼接成json格式并返回
 	mnemonicWord = "["
 	for i, v := range bitcoinKeys.MnemonicWord {
 		mnemonicWord += "\"" +v + "\""
@@ -70,6 +73,7 @@ func (w *wallets) GenerateWallet(bd *database.BlockchainDB,keys func([]string) *
 	return
 }
 
+//将钱包信息存入数据库
 func (w *wallets) storage(address []byte, keys *bitcoinKeys, bd *database.BlockchainDB) {
 	b:=bd.View(address, database.AddrBucket)
 	if len(b) != 0 {

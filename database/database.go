@@ -1,3 +1,6 @@
+/*
+	本包是作为对blot数据库封装的一个存在
+*/
 package database
 
 import (
@@ -39,6 +42,7 @@ func IsBlotExist(nodeID string) bool {
 	return false
 }
 
+//判断仓库是否存在
 func IsBucketExist(bd *BlockchainDB, bt BucketType) bool {
 	var isBucketExist bool
 

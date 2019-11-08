@@ -19,6 +19,7 @@ type bitcoinKeys struct {
 	MnemonicWord []string
 }
 
+//创建公私钥实例
 func NewBitcoinKeys(nothing []string) *bitcoinKeys {
 	b := &bitcoinKeys{nil, nil,nil}
 	b.MnemonicWord = getChineseMnemonicWord()
@@ -26,6 +27,7 @@ func NewBitcoinKeys(nothing []string) *bitcoinKeys {
 	return b
 }
 
+//根据助记词创建公私钥
 func CreateBitcoinKeysByMnemonicWord(mnemonicWord []string) *bitcoinKeys {
 	if len(mnemonicWord) != 7 {
 		log.Error("助记词格式不正确，应为七对中文双字词语")
@@ -44,6 +46,7 @@ func CreateBitcoinKeysByMnemonicWord(mnemonicWord []string) *bitcoinKeys {
 	return b
 }
 
+//根据中文助记词生成公私钥对
 func (b *bitcoinKeys) newKeyPair() {
 	curve := elliptic.P256()
 	var err error

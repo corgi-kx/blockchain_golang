@@ -23,6 +23,7 @@ type Block struct {
 	Hash []byte
 }
 
+//进行挖矿来生成区块
 func mineBlock(transaction []Transaction, preHash []byte, height int) (*Block,error) {
 	timeStamp := time.Now().Unix()
 	//hash数据+时间戳+上一个区块hash
@@ -39,8 +40,11 @@ func mineBlock(transaction []Transaction, preHash []byte, height int) (*Block,er
 	return &block,nil
 }
 
+//生成创世区块
 func newGenesisBlock(transaction []Transaction) *Block {
+	//创世区块的上一个块hash默认设置成下面的样子
 	preHash := []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	//生成创世区块
 	genesisBlock,err:= mineBlock(transaction, preHash, 1)
 	if err != nil {
 		log.Error(err)

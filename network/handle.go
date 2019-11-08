@@ -11,12 +11,13 @@ import (
 	"time"
 )
 
+//对接收到的信息解析出命令,然后对不同的命令分别进行处理
 func handleStream(stream network.Stream) {
 	data, err := ioutil.ReadAll(stream)
 	if err != nil {
 		log.Panic(err)
 	}
-
+	//取信息的前十二位得到命令
 	cmd, content := splitMessage(data)
 	log.Tracef("本节点已接收到命令：%s", cmd)
 	switch command(cmd) {
@@ -94,7 +95,6 @@ func mineBlock( t Transactions) {
 			}
 			time.Sleep(time.Second * 1)
 		}
-
 		//将network下的transaction转换为blc下的transaction
 		nTs := make([]blc.Transaction, len(mineTrans.Ts))
 		for i, _ := range mineTrans.Ts {
@@ -111,9 +111,9 @@ func mineBlock( t Transactions) {
 	} else {
 		log.Debugf("已收到交易信息，当前交易池数量:%d，交易池未满%d，暂不进行挖矿操作", len(tradePool.Ts), TradePoolLength)
 	}
-
 }
 
+//接收到区块,进行验证后加入数据库
 func handleBlock(content []byte) {
 	block := &blc.Block{}
 	block.Deserialize(content)
@@ -139,6 +139,8 @@ func handleBlock(content []byte) {
 		log.Errorf("POW验证不通过，无法将此块：%x加入数据库", block.Hash)
 	}
 }
+
+//接收到获取区块信息,通过hash值 找到该区块 然后把该区块发送过去
 func handleGetBlock(content []byte) {
 	g := getBlock{}
 	g.deserialize(content)
@@ -149,6 +151,7 @@ func handleGetBlock(content []byte) {
 	send.SendMessage(buildPeerInfoByAddr(g.AddrFrom), data)
 }
 
+//从对面节点处获取到本地区块链所没有的区块hash列表,然后依次发送区块hash到该节点
 func handleHashMap(content []byte) {
 	h := hash{}
 	h.deserialize(content)
@@ -169,7 +172,7 @@ func handleHashMap(content []byte) {
 	}
 }
 
-//发送hash字典
+//对面节点需要获得对面所没有的区块的hash列表(两条链的高度差)
 func handleGetHash(content []byte) {
 	g := getHash{}
 	g.deserialize(content)
@@ -185,7 +188,7 @@ func handleGetHash(content []byte) {
 	log.Debug("已发送获取hash列表命令")
 }
 
-//发送版本信息
+//处理收到的对面区块链当前的高度信息
 func handleVersion(content []byte) {
 	var lock sync.Mutex
 	lock.Lock()

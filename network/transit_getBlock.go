@@ -11,7 +11,6 @@ type getBlock struct {
 	AddrFrom string
 }
 
-
 func (v getBlock) serialize() []byte {
 	var result bytes.Buffer
 	encoder := gob.NewEncoder(&result)

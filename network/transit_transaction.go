@@ -21,7 +21,6 @@ type Transaction struct {
 	AddrFrom string
 }
 
-// 将transaction序列化成[]byte
 func (t *Transactions) Serialize() []byte {
 	var result bytes.Buffer
 	encoder := gob.NewEncoder(&result)

@@ -12,6 +12,7 @@ import (
 type Cli struct {
 }
 
+//打印帮助提示
 func printUsage() {
 	fmt.Println("----------------------------------------------------------------------------- ")
 	fmt.Println("Usage:")
@@ -39,6 +40,7 @@ func (cli *Cli) Run() {
 	cli.ReceiveCMD()
 }
 
+//获取用户输入
 func (cli Cli) ReceiveCMD() {
 	stdReader := bufio.NewReader(os.Stdin)
 	for {
@@ -52,9 +54,9 @@ func (cli Cli) ReceiveCMD() {
 	}
 }
 
+//用户输入命令的解析
 func (cli Cli) userCmdHandle(data string) {
 	//去除命令前后空格
-	//transfer -from [\"17L6dPWj4P4zUqwuYV3wAJcbfogwxVnefo\"] -to [\"1JZRuVD91Jgk3DCVqe216ZTSDueyizz5ZX\"] -amount [50]
 	data = strings.TrimSpace(data)
 	var cmd string
 	var context string
@@ -105,7 +107,7 @@ func (cli Cli) userCmdHandle(data string) {
 	}
 }
 
-//截取data字符串中,标签为tag的内容
+//返回data字符串中,标签为tag的内容
 func getSpecifiedContent(data, tag, end string) string {
 	if end != "" {
 		return strings.TrimSpace(data[strings.Index(data, tag)+len(tag) : strings.Index(data, end)])

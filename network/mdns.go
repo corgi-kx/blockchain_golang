@@ -13,12 +13,12 @@ type discoveryNotifee struct {
 	PeerChan chan peer.AddrInfo
 }
 
-//interface to be called when new  peer is found
+//当网络中找到新节点,此方法会被调用
 func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
 	n.PeerChan <- pi
 }
 
-//Initialize the MDNS service
+//启动MDNS服务
 func initMDNS(ctx context.Context, peerhost host.Host, rendezvous string) chan peer.AddrInfo {
 	// time.Second检索当前网络节点的频率
 	ser, err := discovery.NewMdnsService(ctx, peerhost, time.Second, rendezvous)
@@ -26,7 +26,7 @@ func initMDNS(ctx context.Context, peerhost host.Host, rendezvous string) chan p
 		panic(err)
 	}
 
-	//register with service so that we get notified about peer discovery
+	//注册Notifee接口类型
 	n := &discoveryNotifee{}
 	n.PeerChan = make(chan peer.AddrInfo)
 

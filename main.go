@@ -11,6 +11,7 @@ import (
 	"os"
 )
 
+//初始化,读取config.yaml里面的配置信息
 func init() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
@@ -18,7 +19,6 @@ func init() {
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
-
 	logPath:= viper.GetString("blockchain.log_path")
 	listenHost:= viper.GetString("network.listen_host")
 	listenPort:= viper.GetString("network.listen_port")
@@ -28,6 +28,7 @@ func init() {
 	tradePoolLength :=  viper.GetInt("blockchain.trade_pool_length")
 	mineDifficultyValue := viper.GetInt("blockchain.mine_difficulty_value")
 	chineseMnwordPath := viper.GetString("blockchain.chinese_mnemonic_path")
+
 	network.TradePoolLength = tradePoolLength
  	network.ListenHost = listenHost
 	network.RendezvousString = rendezvousString

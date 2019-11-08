@@ -12,6 +12,7 @@ import (
 type Send struct {
 }
 
+//向网络中其他节点发送本节点退出信号
 func (s Send)SendSignOutToPeers() {
 	ss:="节点:"+localAddr + "已退出网络"
 	m:=myerror{ss,localAddr}
@@ -21,7 +22,7 @@ func (s Send)SendSignOutToPeers() {
 	}
 }
 
-//像其他P2P节点发送高度信息
+//向网络中其他P2P节点发送高度信息
 func (s Send)SendVersionToPeers(lastHeight int) {
 		newV:=version{versionInfo,lastHeight,localAddr}
 		data:=jointMessage(cVersion,newV.serialize())
@@ -32,7 +33,7 @@ func (s Send)SendVersionToPeers(lastHeight int) {
 		log.Trace("version信息发送完毕...")
 }
 
-//像其他P2P节点发送交易信息
+//向网络中其他P2P节点发送交易信息
 func (s Send)SendTransToPeers(ts []block.Transaction) {
 	//向交易信息列表加入节点地址信息
 	nts:=make([]Transaction,len(ts))
@@ -53,7 +54,7 @@ func (s Send)SendTransToPeers(ts []block.Transaction) {
 	log.Tracef("已发送%d笔交易到网络中其他P2P节点",len(tss.Ts))
 }
 
-//发送消息函数
+//基础发送信息方法
 func (Send) SendMessage(peer peer.AddrInfo, data []byte) {
 	//连接传入的对等节点
 	if err := localHost.Connect(ctx, peer); err != nil {

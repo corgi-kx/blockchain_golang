@@ -1,3 +1,7 @@
+/*
+	utxo数据库创建的意义在于,不会每次进行转帐时遍历整个区块链,
+	而是去utxo数据库查找未消费的交易输出,这样会大大降低性能问题
+*/
 package block
 
 import (
@@ -31,6 +35,7 @@ func (u *UTXOHandle) ResetUTXODataBase() {
 	}
 }
 
+//根据地址未消费的utxo
 func (u *UTXOHandle) findUTXOFromAddress(address string) []*UTXO {
 	publicKeyHash := getPublicKeyHashFromAddress(address)
 	utxosSlice := []*UTXO{}
@@ -70,6 +75,7 @@ func (u *UTXOHandle) findUTXOFromAddress(address string) []*UTXO {
 	return utxosSlice
 }
 
+//传入交易信息,将交易里的输出添加进utxo数据库,并剔除输入信息
 func (u *UTXOHandle) Synchrodata(tss []Transaction) {
 	//先将全部输入插入数据库
 	for _, ts := range tss {
