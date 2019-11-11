@@ -5,8 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/gob"
 	"github.com/corgi-kx/blockchain_golang/util"
-	"github.com/ethereum/go-ethereum/log"
-
+	log "github.com/corgi-kx/logcustom"
 )
 
 //交易列表信息
