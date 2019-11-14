@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-//初始化,读取config.yaml里面的配置信息
+//初始化系统,读取config.yaml里面的配置信息并进行赋值
 func init() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
@@ -49,6 +49,7 @@ func init() {
 }
 
 func main() {
+	//引入命令行信息,并进行调用
 	c := cli.New()
 	c.Run()
 }

@@ -91,6 +91,7 @@ func (t *Transaction) customCopy() Transaction {
 	return Transaction{t.TxHash, newVin, newVout}
 }
 
+//判断是否是创世区块的交易
 func isGenesisTransaction(tss []Transaction) bool {
 	if len(tss) != 0 {
 		if tss[0].Vint[0].Index == -1 {

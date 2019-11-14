@@ -18,7 +18,7 @@ type proofOfWork struct {
 //获取POW实例
 func NewProofOfWork(block *Block) *proofOfWork {
 	target := big.NewInt(1)
-	//返回1 << 256-TargetBits 的一个大数
+	//返回一个大数(1 << 256-TargetBits)
 	target.Lsh(target, 256-TargetBits)
 	pow := &proofOfWork{block, target}
 	return pow

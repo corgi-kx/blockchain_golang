@@ -22,18 +22,17 @@ func (s Send)SendSignOutToPeers() {
 	}
 }
 
-//向网络中其他P2P节点发送高度信息
+//向网络中其他节点发送高度信息
 func (s Send)SendVersionToPeers(lastHeight int) {
 		newV:=version{versionInfo,lastHeight,localAddr}
 		data:=jointMessage(cVersion,newV.serialize())
 		for _,v :=range peerPool {
 			s.SendMessage(v,data)
 		}
-
 		log.Trace("version信息发送完毕...")
 }
 
-//向网络中其他P2P节点发送交易信息
+//向网络中其他节点发送交易信息
 func (s Send)SendTransToPeers(ts []block.Transaction) {
 	//向交易信息列表加入节点地址信息
 	nts:=make([]Transaction,len(ts))
@@ -48,10 +47,10 @@ func (s Send)SendTransToPeers(ts []block.Transaction) {
 	go handleTransaction(tss.Serialize())
 	//然后将命令与交易列表拼接好发送给全网节点
 	data:=jointMessage(cTransaction,tss.Serialize())
+	log.Tracef("准备发送%d笔交易到网络中其他P2P节点",len(tss.Ts))
 	for _,v :=range peerPool {
 		s.SendMessage(v,data)
 	}
-	log.Tracef("已发送%d笔交易到网络中其他P2P节点",len(tss.Ts))
 }
 
 //基础发送信息方法
@@ -66,7 +65,6 @@ func (Send) SendMessage(peer peer.AddrInfo, data []byte) {
 		log.Debug("Stream open failed", err)
 	} else {
 		cmd,_:=splitMessage(data)
-		log.Debugf("send cmd:%s to peer:%v", cmd,peer)
 		//创建一个缓冲流的容器
 		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 		//写入信息到缓冲容器
@@ -84,5 +82,6 @@ func (Send) SendMessage(peer peer.AddrInfo, data []byte) {
 		if err != nil {
 			log.Panic(err)
 		}
+		log.Debugf("send cmd:%s to peer:%v", cmd,peer)
 	}
 }

@@ -7,21 +7,21 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/gob"
-	log "github.com/corgi-kx/logcustom"
 	"github.com/corgi-kx/blockchain_golang/util"
+	log "github.com/corgi-kx/logcustom"
 	"math/big"
 	"os"
 )
 
 type bitcoinKeys struct {
-	PrivateKey *ecdsa.PrivateKey
-	PublicKey  []byte
+	PrivateKey   *ecdsa.PrivateKey
+	PublicKey    []byte
 	MnemonicWord []string
 }
 
 //创建公私钥实例
 func NewBitcoinKeys(nothing []string) *bitcoinKeys {
-	b := &bitcoinKeys{nil, nil,nil}
+	b := &bitcoinKeys{nil, nil, nil}
 	b.MnemonicWord = getChineseMnemonicWord()
 	b.newKeyPair()
 	return b
@@ -33,14 +33,14 @@ func CreateBitcoinKeysByMnemonicWord(mnemonicWord []string) *bitcoinKeys {
 		log.Error("助记词格式不正确，应为七对中文双字词语")
 		return nil
 	}
-	for _,v:=range mnemonicWord {
+	for _, v := range mnemonicWord {
 		if len(v) != 6 {
 			log.Error("助记词格式不正确，应为七对中文双字词语")
 			return nil
 		}
 	}
 
-	b := &bitcoinKeys{nil, nil,nil}
+	b := &bitcoinKeys{nil, nil, nil}
 	b.MnemonicWord = mnemonicWord
 	b.newKeyPair()
 	return b
@@ -50,7 +50,7 @@ func CreateBitcoinKeysByMnemonicWord(mnemonicWord []string) *bitcoinKeys {
 func (b *bitcoinKeys) newKeyPair() {
 	curve := elliptic.P256()
 	var err error
-	buf:=bytes.NewReader(b.jointSpeed())
+	buf := bytes.NewReader(b.jointSpeed())
 	b.PrivateKey, err = ecdsa.GenerateKey(curve, buf)
 	if err != nil {
 		log.Panic(err)
@@ -60,45 +60,48 @@ func (b *bitcoinKeys) newKeyPair() {
 
 //将助记词拼接成字节数组，并截取前40位
 func (b bitcoinKeys) jointSpeed() []byte {
-	bs:=make([]byte,0)
-	for _,v:= range b.MnemonicWord {
-		bs = append(bs,[]byte(v)...)
+	bs := make([]byte, 0)
+	for _, v := range b.MnemonicWord {
+		bs = append(bs, []byte(v)...)
 	}
 	return bs[:40]
 }
+
 //获取中文种子
-func  getChineseMnemonicWord() []string{
-	file,err:=os.Open(ChineseMnwordPath)
+func getChineseMnemonicWord() []string {
+	file, err := os.Open(ChineseMnwordPath)
 	//file,err:=os.Open("D:/programming/golang/GOPATH/src/github.com/corgi-kx/blockchain_golang/blc/chinese_mnemonic_world.txt")
 	if err != nil {
 		log.Panic(err)
 	}
-	s:=[]string{}
+	s := []string{}
 	//因为种子最高40个字节，所以就取7对词语，7*2*3 = 42字节，返回后在截取前40位
-	for i := 0;i<7;i++ {
-		n,err:=rand.Int(rand.Reader,big.NewInt(5948))  //词库一共5949对词语，顾此设置随机数最高5948
+	for i := 0; i < 7; i++ {
+		n, err := rand.Int(rand.Reader, big.NewInt(5948)) //词库一共5949对词语，顾此设置随机数最高5948
 		if err != nil {
 			log.Panic(err)
 		}
-		b:=make([]byte,6)
-		_,err=file.ReadAt(b,n.Int64()*7+3)   //从文件的具体位置读取 防止乱码
+		b := make([]byte, 6)
+		_, err = file.ReadAt(b, n.Int64()*7+3) //从文件的具体位置读取 防止乱码
 		if err != nil {
 			log.Panic(err)
 		}
-		s=append(s,string(b))
+		s = append(s, string(b))
 	}
 	file.Close()
 	return s
 }
 
-
+//私钥长度为32字节
 const privKeyBytesLen = 32
-func (keys *bitcoinKeys) GetPrivateKey() string{
+
+//获取私钥
+func (keys *bitcoinKeys) GetPrivateKey() string {
 	d := keys.PrivateKey.D.Bytes()
 	b := make([]byte, 0, privKeyBytesLen)
-	priKet := paddedAppend(privKeyBytesLen, b, d)
-
-	return string(util.Base58Encode(priKet))
+	priKey := paddedAppend(privKeyBytesLen, b, d)
+	//base58加密
+	return string(util.Base58Encode(priKey))
 }
 
 func paddedAppend(size uint, dst, src []byte) []byte {
@@ -108,6 +111,7 @@ func paddedAppend(size uint, dst, src []byte) []byte {
 	return append(dst, src...)
 }
 
+//通过公钥获得地址
 func (b *bitcoinKeys) getAddress() []byte {
 	//1.ripemd160(sha256(publickey))
 	ripPubKey := generatePublicKeyHash(b.PublicKey)
@@ -122,6 +126,7 @@ func (b *bitcoinKeys) getAddress() []byte {
 	return address
 }
 
+//序列化
 func (b *bitcoinKeys) serliazle() []byte {
 	var result bytes.Buffer
 	gob.Register(elliptic.P256())
@@ -134,7 +139,8 @@ func (b *bitcoinKeys) serliazle() []byte {
 	return result.Bytes()
 }
 
-func  (v *bitcoinKeys) Deserialize(d []byte){
+//反序列化
+func (v *bitcoinKeys) Deserialize(d []byte) {
 	decoder := gob.NewDecoder(bytes.NewReader(d))
 	gob.Register(elliptic.P256())
 	err := decoder.Decode(v)
@@ -142,7 +148,6 @@ func  (v *bitcoinKeys) Deserialize(d []byte){
 		log.Panic(err)
 	}
 }
-
 
 func generatePublicKeyHash(publicKey []byte) []byte {
 	sha256PubKey := sha256.Sum256(publicKey)
@@ -168,6 +173,7 @@ func checkSumHash(versionPublickeyHash []byte) []byte {
 	return tailHash
 }
 
+//判断是否是有效的比特币地址
 func IsVaildBitcoinAddress(address string) bool {
 	adddressByte := []byte(address)
 	fullHash := util.Base58Decode(adddressByte)
@@ -184,11 +190,13 @@ func IsVaildBitcoinAddress(address string) bool {
 	}
 }
 
-func GetAddressFromPublicKey (publickey []byte) string{
-	b:=bitcoinKeys{PublicKey:publickey}
+//通过公钥信息获得地址
+func GetAddressFromPublicKey(publickey []byte) string {
+	b := bitcoinKeys{PublicKey: publickey}
 	return string(b.getAddress())
 }
 
+//使用私钥进行数字签名
 func ellipticCurveSign(privKey *ecdsa.PrivateKey, hash []byte) []byte {
 	r, s, err := ecdsa.Sign(rand.Reader, privKey, hash)
 	if err != nil {
@@ -198,6 +206,7 @@ func ellipticCurveSign(privKey *ecdsa.PrivateKey, hash []byte) []byte {
 	return signature
 }
 
+//使用公钥进行签名验证
 func ellipticCurveVerify(pubKey []byte, signature []byte, hash []byte) bool {
 	//拆分签名 得到 r,s
 	r := big.Int{}

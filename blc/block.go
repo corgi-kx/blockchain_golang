@@ -36,7 +36,7 @@ func mineBlock(transaction []Transaction, preHash []byte, height int) (*Block,er
 	block.Nonce = nonce
 	block.Hash = hash[:]
 	log.Info("pow verify : ", pow.Verify())
-	log.Info("已生成新的区块")
+	log.Infof("已生成新的区块,区块高度为%d",block.Height)
 	return &block,nil
 }
 

@@ -58,7 +58,7 @@ func (bd *BlockchainDB) View(k []byte, bt BucketType) []byte {
 		return nil
 	})
 	if err != nil {
-		log.Warn(err)
+		//log.Warn(err)
 		return nil
 	}
 	//不再次赋值的话，返回值会报错，不知道狗日的啥意思

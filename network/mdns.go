@@ -13,7 +13,7 @@ type discoveryNotifee struct {
 	PeerChan chan peer.AddrInfo
 }
 
-//当网络中找到新节点,此方法会被调用
+//当网络中找到新节点时,此方法会被调用
 func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
 	n.PeerChan <- pi
 }

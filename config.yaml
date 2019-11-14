@@ -1,21 +1,21 @@
 blockchain:
   #挖矿难度值,越大越难挖
-  mine_difficulty_value: 23
+  mine_difficulty_value: 24
   #挖矿奖励代币数量
   token_reward_num: 25
   #交易池大小(满足多少条交易才开始发送挖矿信息)
   trade_pool_length: 2
   #日志存放路径
   log_path: "./"
-  #中文助记词路径
+  #中文助记词种子路径
   chinese_mnemonic_path: "./chinese_mnemonic_world.txt"
 network:
   #本地监听IP
   listen_host: "192.168.0.164"
   #本地监听端口
-  listen_port: "9000"
-
+  listen_port: "9002"
+  #节点组唯一标识名称(名称不同会找不到网络)
   rendezvous_string: "meetme"
-  #p2p网络连接通道名称
+  #网络传输流的协议id(名称不同发送不了数据)
   protocol_id: "/chain/1.1.0"
 

@@ -56,6 +56,7 @@ func (bc *blockchain) CreataGenesisTransaction(address string, value int, send S
 	utxos.ResetUTXODataBase()
 }
 
+//创建区块链
 func (bc *blockchain) newGenesisBlockchain(transaction []Transaction) {
 	//判断一下是否已生成创世区块
 	if len(bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket)) != 0 {
@@ -67,7 +68,7 @@ func (bc *blockchain) newGenesisBlockchain(transaction []Transaction) {
 	bc.AddBlock(genesisBlock)
 }
 
-//创建挖矿奖励地址的交易信息
+//创建挖矿奖励地址交易
 func (bc *blockchain) CreataRewardTransaction(address string) Transaction {
 	if address == "" {
 		log.Warn("没有设置挖矿奖励地址，如果出块则不会给予奖励代币")
@@ -189,7 +190,7 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string, send Sen
 		//将utxos添加上未打包进区块的交易信息
 		if tss != nil {
 			for _, ts := range tss {
-			//先添加未花费utxo 如果有的话就不添加
+				//先添加未花费utxo 如果有的话就不添加
 			tagVout:
 				for index, vOut := range ts.Vout {
 					if bytes.Compare(vOut.PublicKeyHash, generatePublicKeyHash(fromKeys.PublicKey)) != 0 {
@@ -258,13 +259,9 @@ func (bc *blockchain) CreateTransaction(from, to string, amount string, send Sen
 
 //交易转账
 func (bc *blockchain) Transfer(tss []Transaction, send Sender) {
-	//tss := bc.CreateTransaction(fromSlice, toSlice, amountSlice)
-	//if tss == nil {
-	//	log.Error("没有符合规则的交易，不进行出块操作")
-	//	return
-	//}
-	//进行数字签名验证
+	//如果是创世区块的交易则无需进行数字签名验证
 	if !isGenesisTransaction(tss) {
+		//交易的数字签名验证
 		bc.verifyTransactionsSign(&tss)
 		if len(tss) == 0 {
 			log.Error("没有通过的数字签名验证，不予挖矿出块！")
@@ -341,7 +338,7 @@ circle:
 			goto circle
 		}
 	}
-	log.Debug("已完成UTXO交易信息余额验证")
+	log.Debug("已完成UTXO交易余额验证")
 }
 
 //设置挖矿奖励地址
@@ -349,22 +346,23 @@ func (bc *blockchain) SetRewardAddress(address string) {
 	bc.BD.Put([]byte(RewardAddrMapping), []byte(address), database.AddrBucket)
 }
 
-//进行挖矿操作
+//将交易添加进区块链中(内含挖矿操作)
 func (bc *blockchain) addBlockchain(transaction []Transaction, send Sender) {
 	preBlockbyte := bc.BD.View(bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket), database.BlockBucket)
 	preBlock := Block{}
 	preBlock.Deserialize(preBlockbyte)
 	height := preBlock.Height + 1
+	//进行挖矿
 	nb, err := mineBlock(transaction, bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket), height)
 	if err != nil {
 		log.Warn(err)
 		return
 	}
+	//将区块添加到本地库中
 	bc.AddBlock(nb)
 	//将数据同步到UTXO数据库中
 	u := UTXOHandle{bc}
 	u.Synchrodata(transaction)
-	log.Debug("已生成新区块，将当前区块高度发送至网络中其他P2P节点")
 	//挖矿出块后 发送高度信息到其他节点
 	send.SendVersionToPeers(nb.Height)
 }
@@ -377,21 +375,6 @@ func (bc *blockchain) AddBlock(block *Block) {
 	if currentBlock == nil || currentBlock.Height < block.Height {
 		bc.BD.Put([]byte(LastBlockHashMapping), block.Hash, database.BlockBucket)
 	}
-
-	////如果是创世区块直接存入数据库,不是的话该区块高度需要比当前高度大
-	//if block.Height == 1 {
-	//	bc.BD.Put(block.Hash, block.Serialize(), database.BlockBucket)
-	//	bc.BD.Put([]byte(LastBlockHashMapping), block.Hash, database.BlockBucket)
-	//} else {
-	//	bci := NewBlockchainIterator(bc)
-	//	currentBlock := bci.Next()
-	//	if currentBlock.Height < block.Height {
-	//		bc.BD.Put(block.Hash, block.Serialize(), database.BlockBucket)
-	//		bc.BD.Put([]byte(LastBlockHashMapping), block.Hash, database.BlockBucket)
-	//	} else {
-	//		log.Warn("区块高度相同或者小于当前高度，不予存入数据库")
-	//	}
-	//}
 }
 
 //对交易信息进行数字签名
@@ -407,7 +390,6 @@ func (bc *blockchain) signatureTransactions(tss []Transaction, wallets *wallets)
 			if err != nil {
 				log.Fatal(err)
 			}
-
 			copyTs.Vint[index].Signature = nil
 			//将拷贝后的交易里面的公钥替换为公钥hash
 			copyTs.Vint[index].PublicKey = trans.Vout[tss[i].Vint[index].Index].PublicKeyHash
@@ -452,12 +434,9 @@ circle:
 	log.Debug("已完成数字签名验证")
 }
 
-/**
-  查找交易id对应的交易信息
-  先查找未插入数据库的交易切片
-  在查找已插入数据库的交易
-*/
+//查找交易id对应的交易信息
 func (bc *blockchain) findTransaction(tss []Transaction, ID []byte) (Transaction, error) {
+	//先查找未插入数据库的交易
 	if len(tss) != 0 {
 		for _, tx := range tss {
 			if bytes.Compare(tx.TxHash, ID) == 0 {
@@ -466,6 +445,7 @@ func (bc *blockchain) findTransaction(tss []Transaction, ID []byte) (Transaction
 		}
 	}
 	bci := NewBlockchainIterator(bc)
+	//在查找数据库中存在的交易
 	for {
 		block := bci.Next()
 
@@ -474,14 +454,13 @@ func (bc *blockchain) findTransaction(tss []Transaction, ID []byte) (Transaction
 				return tx, nil
 			}
 		}
-
+		//一直迭代到创世区块后退出
 		var hashInt big.Int
 		hashInt.SetBytes(block.PreHash)
 		if big.NewInt(0).Cmp(&hashInt) == 0 {
 			break
 		}
 	}
-
 	return Transaction{}, errors.New("FindTransaction err : Transaction is not found")
 }
 
@@ -500,14 +479,14 @@ func (bc *blockchain) GetBlockHashByHeight(height int) []byte {
 	bcl := NewBlockchainIterator(bc)
 	for {
 		currentBlock := bcl.Next()
-		if currentBlock.Height == height {
+		if currentBlock == nil {
+			return nil
+		} else if currentBlock.Height == height {
 			return currentBlock.Hash
-		}
-		if isGenesisBlock(currentBlock) {
-			break
+		} else if isGenesisBlock(currentBlock) {
+			return nil
 		}
 	}
-	return nil
 }
 
 //通过区块hash获取区块信息
