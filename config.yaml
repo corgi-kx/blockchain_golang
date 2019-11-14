@@ -3,7 +3,7 @@ blockchain:
   mine_difficulty_value: 24
   #挖矿奖励代币数量
   token_reward_num: 25
-  #交易池大小(满足多少条交易才开始发送挖矿信息)
+  #交易池大小(满足多少条交易才开始进行挖矿)
   trade_pool_length: 2
   #日志存放路径
   log_path: "./"
