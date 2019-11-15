@@ -18,7 +18,7 @@ type Block struct {
 	//区块高度
 	Height int
 	//随机数
-	Nonce int
+	Nonce int64
 	//本区块hash
 	Hash []byte
 }

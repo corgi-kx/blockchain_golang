@@ -564,17 +564,19 @@ func (bc *blockchain) PrintAllBlockInfo() {
 		fmt.Println("  	------------------------------交易数据------------------------------")
 		for _, v := range block.Transactions {
 			fmt.Printf("   	 本次交易id:  %x\n", v.TxHash)
-			fmt.Println("   	  已花费UTXO：")
+			fmt.Println("   	  tx_input：")
 			for _, vIn := range v.Vint {
 				fmt.Printf("			交易id:  %x\n", vIn.TxHash)
 				fmt.Printf("			索引:    %d\n", vIn.Index)
 				fmt.Printf("			签名信息:    %x\n", vIn.Signature)
 				fmt.Printf("			公钥:    %x\n", vIn.PublicKey)
+				fmt.Printf("			地址:    %s\n", GetAddressFromPublicKey(vIn.PublicKey))
 			}
-			fmt.Println("  	  未花费UTXO：")
+			fmt.Println("  	  tx_output：")
 			for index, vOut := range v.Vout {
 				fmt.Printf("			金额:    %d    \n", vOut.Value)
 				fmt.Printf("			公钥Hash:    %x    \n", vOut.PublicKeyHash)
+				fmt.Printf("			地址:    %s\n", GetAddressFromPublicKeyHash(vOut.PublicKeyHash))
 				if len(v.Vout) != 1 && index != len(v.Vout)-1 {
 					fmt.Println("			---------------")
 				}

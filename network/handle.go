@@ -57,17 +57,21 @@ func handleTransaction(content []byte) {
 	}
 	//交易池中只能存在每个地址的一笔交易信息
 	//判断当前交易池中是否已有该地址发起的交易
-circle:
-	for i, _ := range t.Ts {
-		for _, v := range tradePool.Ts {
-			if bytes.Equal(t.Ts[i].Vint[0].PublicKey, v.Vint[0].PublicKey) {
-				s := fmt.Sprintf("当前交易池里，已存在此笔地址转账信息(%s)，顾暂不能进行转账，请等待上笔交易出块后在进行此地址转账操作", blc.GetAddressFromPublicKey(t.Ts[i].Vint[0].PublicKey))
-				log.Error(s)
-				t.Ts = append(t.Ts[:i], t.Ts[i+1:]...)
-				goto circle
+	if len(tradePool.Ts) != 0 {
+	circle:
+		for i, _ := range t.Ts {
+			for _, v := range tradePool.Ts {
+				if bytes.Equal(t.Ts[i].Vint[0].PublicKey, v.Vint[0].PublicKey) {
+					s := fmt.Sprintf("当前交易池里，已存在此笔地址转账信息(%s)，顾暂不能进行转账，请等待上笔交易出块后在进行此地址转账操作", blc.GetAddressFromPublicKey(t.Ts[i].Vint[0].PublicKey))
+					log.Error(s)
+					t.Ts = append(t.Ts[:i], t.Ts[i+1:]...)
+					goto circle
+				}
 			}
 		}
 	}
+
+
 	if len(t.Ts) == 0 {
 		return
 	}
@@ -77,41 +81,45 @@ circle:
 //调用区块模块进行挖矿操作
 var lock = sync.Mutex{}
 func mineBlock( t Transactions) {
-	//将传入的交易添加进交易池
-	tradePool.Ts = append(tradePool.Ts, t.Ts...)
 	//锁上,等待上一个挖矿结束后才进行挖矿!
 	lock.Lock()
 	defer lock.Unlock()
-	//满足交易池规定的大小后进行挖矿
-	if len(tradePool.Ts) >= TradePoolLength {
-		log.Debugf("交易池已满足挖矿交易数量大小限制:%d,即将进行挖矿", TradePoolLength)
-		mineTrans := Transactions{make([]Transaction, TradePoolLength)}
-		copy(mineTrans.Ts, tradePool.Ts[:TradePoolLength])
+	//将临时交易池的交易添加进交易池
+	tradePool.Ts = append(tradePool.Ts, t.Ts...)
 
-		bc := blc.NewBlockchain()
-		//如果当前节点区块高度小于网络最新高度，则等待节点更新区块后在进行挖矿
-		for {
-			currentHeight := bc.GetLastBlockHeight()
-			if currentHeight >= blc.NewestBlockHeight {
-				break
+	for {
+		//满足交易池规定的大小后进行挖矿
+		if len(tradePool.Ts) >= TradePoolLength {
+			log.Debugf("交易池已满足挖矿交易数量大小限制:%d,即将进行挖矿", TradePoolLength)
+			mineTrans := Transactions{make([]Transaction, TradePoolLength)}
+			copy(mineTrans.Ts, tradePool.Ts[:TradePoolLength])
+
+			bc := blc.NewBlockchain()
+			//如果当前节点区块高度小于网络最新高度，则等待节点更新区块后在进行挖矿
+			for {
+				currentHeight := bc.GetLastBlockHeight()
+				if currentHeight >= blc.NewestBlockHeight {
+					break
+				}
+				time.Sleep(time.Second * 1)
 			}
-			time.Sleep(time.Second * 1)
+			//将network下的transaction转换为blc下的transaction
+			nTs := make([]blc.Transaction, len(mineTrans.Ts))
+			for i, _ := range mineTrans.Ts {
+				nTs[i].TxHash = mineTrans.Ts[i].TxHash
+				nTs[i].Vint = mineTrans.Ts[i].Vint
+				nTs[i].Vout = mineTrans.Ts[i].Vout
+			}
+			//进行转帐挖矿
+			bc.Transfer(nTs, send)
+			//剔除已打包进区块的交易
+			newTrans:=[]Transaction{}
+			newTrans = append(newTrans,tradePool.Ts[TradePoolLength:]...)
+			tradePool.Ts = newTrans
+		} else {
+			log.Infof("当前交易池数量:%d，交易池未满%d，暂不进行挖矿操作", len(tradePool.Ts), TradePoolLength)
+			break
 		}
-		//将network下的transaction转换为blc下的transaction
-		nTs := make([]blc.Transaction, len(mineTrans.Ts))
-		for i, _ := range mineTrans.Ts {
-			nTs[i].TxHash = mineTrans.Ts[i].TxHash
-			nTs[i].Vint = mineTrans.Ts[i].Vint
-			nTs[i].Vout = mineTrans.Ts[i].Vout
-		}
-		//进行转帐挖矿
-		bc.Transfer(nTs, send)
-		//将已发送的交易剔除掉
-		newTradePool := Transactions{}
-		copy(newTradePool.Ts, tradePool.Ts[TradePoolLength:])
-		tradePool = newTradePool
-	} else {
-		log.Infof("当前交易池数量:%d，交易池未满%d，暂不进行挖矿操作", len(tradePool.Ts), TradePoolLength)
 	}
 }
 

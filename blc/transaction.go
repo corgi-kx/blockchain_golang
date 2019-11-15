@@ -59,8 +59,8 @@ func (t *Transaction) Serialize() []byte {
 
 //将整笔交易里的成员依次转换成字节数组,拼接成整体后 返回
 func (t *Transaction) getTransBytes() []byte {
-	if t.TxHash == nil || t.Vint == nil || t.Vout == nil{
-		log.Error("交易信息不完整，无法拼接成字节数组")
+	if t.TxHash == nil  || t.Vout == nil{
+		log.Panic("交易信息不完整，无法拼接成字节数组")
 		return nil
 	}
 	transBytes:=[]byte{}
@@ -93,7 +93,7 @@ func (t *Transaction) customCopy() Transaction {
 
 //判断是否是创世区块的交易
 func isGenesisTransaction(tss []Transaction) bool {
-	if len(tss) != 0 {
+	if tss != nil {
 		if tss[0].Vint[0].Index == -1 {
 			return true
 		}

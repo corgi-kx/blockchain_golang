@@ -2,11 +2,14 @@ package block
 
 import (
 	"bytes"
+	"crypto/rand"
 	"crypto/sha256"
 	"errors"
 	"github.com/corgi-kx/blockchain_golang/util"
 	log "github.com/corgi-kx/logcustom"
+	"math"
 	"math/big"
+	"time"
 )
 
 //工作量证明(pow)结构体
@@ -25,14 +28,26 @@ func NewProofOfWork(block *Block) *proofOfWork {
 }
 
 //进行hash运算,获取到当前区块的hash值
-func (p *proofOfWork) run() (int,[]byte,error) {
-	nonce := 0
+func (p *proofOfWork) run() (int64,[]byte,error) {
+	var nonce int64 = 0
 	var hashByte [32]byte
 	var hashInt big.Int
-	log.Info("正在挖矿...")
+	log.Info("准备挖矿...")
+	//开启一个计数器,每隔五秒打印一下当前挖矿,用来直观展现挖矿情况
+	times:=0
+	ticker1 := time.NewTicker(5 * time.Second)
+	go func(t *time.Ticker) {
+		for {
+			<-t.C
+			times += 5
+			log.Infof("正在挖矿,挖矿区块高度为%d,已经运行%ds,nonce值:%d,当前hash:%x",p.Height,times,nonce,hashByte)
+		}
+	}(ticker1)
 	for nonce < maxInt {
 		//检测网络上其他节点是否已经挖出了区块
 		if p.Height <= NewestBlockHeight {
+			//结束计数器
+			ticker1.Stop()
 			return 0,nil,errors.New("检测到当前节点已接收到最新区块，所以终止此块的挖矿操作")
 		}
 		data := p.jointData(nonce)
@@ -44,10 +59,17 @@ func (p *proofOfWork) run() (int,[]byte,error) {
 		if hashInt.Cmp(p.Target) == -1 {
 			break
 		} else {
-			nonce++
+			//nonce++
+			bigInt,err := rand.Int(rand.Reader,big.NewInt(math.MaxInt64))
+			if err != nil {
+				log.Panic("随机数错误:",err)
+			}
+			nonce = bigInt.Int64()
 		}
 	}
-	log.Infof("挖到区块了,区块hash为: %x", hashByte)
+	//结束计数器
+	ticker1.Stop()
+	log.Infof("本节点已成功挖到区块!!!,高度为:%d,nonce值为:%d,区块hash为: %x",p.Height,nonce,hashByte)
 	return nonce, hashByte[:],nil
 }
 
@@ -66,7 +88,7 @@ func (p *proofOfWork) Verify() bool {
 }
 
 //将上一区块hash、数据、时间戳、难度位数、随机数 拼接成字节数组
-func (p *proofOfWork) jointData(nonce int) (data []byte) {
+func (p *proofOfWork) jointData(nonce int64) (data []byte) {
 	preHash := p.Block.PreHash
 	timeStampByte := util.Int64ToBytes(p.Block.TimeStamp)
 	heightByte := util.Int64ToBytes(int64(p.Block.Height))

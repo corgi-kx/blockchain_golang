@@ -192,8 +192,24 @@ func IsVaildBitcoinAddress(address string) bool {
 
 //通过公钥信息获得地址
 func GetAddressFromPublicKey(publickey []byte) string {
+	if publickey == nil {
+		return  ""
+	}
 	b := bitcoinKeys{PublicKey: publickey}
 	return string(b.getAddress())
+}
+
+//通过公钥信息获得地址
+func GetAddressFromPublicKeyHash(publickeyHash []byte) string {
+	//2.最前面添加一个字节的版本信息获得 versionPublickeyHash
+	versionPublickeyHash := append([]byte{version}, publickeyHash[:]...)
+	//3.sha256(sha256(versionPublickeyHash))  取最后四个字节的值
+	tailHash := checkSumHash(versionPublickeyHash)
+	//4.拼接最终hash versionPublickeyHash + checksumHash
+	finalHash := append(versionPublickeyHash, tailHash...)
+	//进行base58加密
+	address := util.Base58Encode(finalHash)
+	return string(address)
 }
 
 //使用私钥进行数字签名
