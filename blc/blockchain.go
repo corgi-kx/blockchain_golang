@@ -47,7 +47,8 @@ func (bc *blockchain) CreataGenesisTransaction(address string, value int, send S
 	tss := []Transaction{ts}
 	//开始生成区块链的第一个区块
 	bc.newGenesisBlockchain(tss)
-	//创世区块后,向全网节点发送当前区块链高度1
+	//创世区块后,更新本地最新区块为1并,向全网节点发送当前区块链高度1
+	NewestBlockHeight = 1
 	send.SendVersionToPeers(1)
 	fmt.Println("已成生成创世区块")
 	//重置utxo数据库，将创世数据存入

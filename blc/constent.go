@@ -3,7 +3,7 @@ package block
 import (
 	"math"
 )
-//当前网络中，区块最新高度
+//当前节点发现的网络中最新区块高度
 var NewestBlockHeight int
 
 //当前本地监听端口
