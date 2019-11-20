@@ -134,6 +134,7 @@ git clone https://github.com/corgi-kx/blockchain_golang.git
 ```shell
  go build -mod=vendor -o chain main.go
 ```
+<br>
 
 **2.打开多个窗口**
 
@@ -141,6 +142,8 @@ git clone https://github.com/corgi-kx/blockchain_golang.git
 >实机操作时，如果出现找不到其他节点情况可能是防火墙问题，请关闭防火墙后在试
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118103707708.png)
+
+<br>
 
 **3.修改配置文件**
   
@@ -172,6 +175,9 @@ network:
   protocol_id: "/chain/1.1.0"
 
 ```
+
+<br>
+
 **4.启动节点,创建钱包,生成创世区块**
 
 启动节点1
@@ -208,12 +214,16 @@ tail -f log9000.txt
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118144251486.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)
 
+<br>
+
 **5.同步区块**
 
 节点2,节点3依次修改配置文件的端口号为9001,9002,启动这两个节点来同步创世区块
 这时节点1的日志监测到网络中存在的其他节点
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118145703154.png)节点2,节点3 启动后会自动同步创世区块
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118145752942.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)
+
+<br>
 
 **6.进行转帐操作**
 
@@ -240,6 +250,8 @@ tail -f log9000.txt
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/2019111815314125.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)
 
+<br>
+
 **7.查看余额**
 
 三个节点中,由节点2挖到区块,里所应当节点2获得挖矿奖励25Tokens
@@ -252,6 +264,9 @@ tail -f log9000.txt
 > getBalance -a 1E6aRBxfncAsypUnjGxPJYbR4JQ3gZ6hHD
 地址:1E6aRBxfncAsypUnjGxPJYbR4JQ3gZ6hHD的余额为：10
 ```
+
+<br>
+
 **8.查看区块详细信息**
 
 任意节点输入`printAllBlock`命令查看区块信息
@@ -331,6 +346,9 @@ tail -f log9000.txt
 ========================================================================================================
 
 ```
+
+<br>
+
 **9.其他**
 
 你也可以在节点2,节点3发起转帐,不过首先需要通过助记词导入钱包信息`importMnword -m`
