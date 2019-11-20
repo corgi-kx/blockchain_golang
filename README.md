@@ -6,7 +6,7 @@
 <br>
 &ensp;&ensp;&ensp;本程序是模仿比特币的功能所编写的区块链公链demo,主要应用到了密码学,共识算法,对等网络,区块链防篡改结构等相关知识,并把各个知识点结合到一起,编写成了简单完善的可运行公链demo
 
-<br>
+<hr>
 
 ### 程序特点：
 
@@ -24,7 +24,7 @@
 - 自定义挖矿难度值、旷工挖矿奖励值
 - 自定义交易池大小，满足指定笔数的交易后才会开始挖矿
 
-<br>
+<hr>
 
 ### 主要模块：
  - 命令调度模块
@@ -40,12 +40,7 @@
 &ensp;&ensp;&ensp;  启动程序后，控制台捕捉用户输入信息，通过对用户的输入解析出命令以及跟随在命令后的值。根据不同命令对程序进行相关操作
 <br>
 ####  UTXO交易生成模块
-&ensp;&ensp;&ensp; 交易转账模块基于UTXO模型，但并没有引入比特币脚本，脚本处直接使用数字签名的字节数组进行替代。当用户A转账给用户B时，需要用户A使用私钥对"**输入**" (包含了用户A所拥有的"**输出**"交易hash、索引等信息）进行数字签名，生成交易后发送给其他节点，其他节点则使用用户A的公钥对其进行签名验证。
-&ensp;&ensp;&ensp;  由于UTXO的特殊结构，天然的避免了重放攻击，并不需要像以太坊账户系统一样添加nonce值，但是为了避免UTXO的重复计算问题，在上一笔转账未打包进区块之前暂不支持同一地址的再次转账
-
-&ensp;&ensp;&ensp;支持一笔交易多笔转账，并为了优化转账查询速度创建了UTXO数据表专门用于存储所有区块链中未花费的**输出**。
-
-&ensp;&ensp;&ensp;想要了解更多关于UTXO相关，建议参考[这篇文章](https://draveness.me/utxo-account-models)
+&ensp;&ensp;&ensp;交易转账模块基于UTXO模型，但并没有引入比特币脚本，脚本处直接使用数字签名的字节数组进行替代。当用户A转账给用户B时，需要用户A使用私钥对"**输入**" (包含了用户A所拥有的"**输出**"交易hash、索引等信息）进行数字签名，生成交易后发送给其他节点，其他节点则使用用户A的公钥对其进行签名验证。</br>&ensp;&ensp;&ensp;由于UTXO的特殊结构，天然的避免了重放攻击，并不需要像以太坊账户系统一样添加nonce值，但是为了避免UTXO的重复计算问题，在上一笔转账未打包进区块之前暂不支持同一地址的再次转账</br>&ensp;&ensp;&ensp;支持一笔交易多笔转账，并为了优化转账查询速度创建了UTXO数据表专门用于存储所有区块链中未花费的**输出**。</br>&ensp;&ensp;&ensp;想要了解更多关于UTXO相关，建议参考[这篇文章](https://draveness.me/utxo-account-models)
 <br>
 ####  密码学加解密模块
    1. 单向散列函数：sha256  ripemd-160
@@ -84,14 +79,8 @@
 <br>
 
 ####  P2P网络通讯模块
-&ensp;&ensp;&ensp;  使用适合局域网寻址的mdns技术，由于所使用的包在windows下存在找不到网络的bug，所以本程序建议在linux/mac下运行。
-
-&ensp;&ensp;&ensp; 节点启动后会自动在局域网中寻找其他对等节点，发现后会存放在节点池中（存于内存），节点之间相互通讯的数据前十二个字节默认为命令，根据命令不同来对本地的区块链相关信息进行反馈
-
-&ensp;&ensp;&ensp; 主要运行原理为分发区块与收到交易后的挖矿：
-
-&ensp;&ensp;获取区块流程：
-
+&ensp;&ensp; 使用适合局域网寻址的mdns技术，由于所使用的包在windows下存在找不到网络的bug，所以本程序建议在linux/mac下运行</br>              &ensp;&ensp; 节点启动后会自动在局域网中寻找其他对等节点，发现后会存放在节点池中（存于内存），节点之间相互通讯的数据前十二个字节默认为命令，根据命令不同来对本地的区块链相关信息进行反馈 </br>&ensp;&ensp;&ensp;主要运行原理为分发区块与收到交易后的挖矿：</br>
+</br>&ensp;&ensp;获取区块流程：
  1. 互相对比区块高度
  2. 获取缺失的区块hash
  3. 通过区块hash来接收缺失的整个区块
@@ -131,14 +120,9 @@
 [github.com/libp2p/go-libp2p](https://github.com/libp2p/go-libp2p)  | ipfs旗下的p2p通讯工具
 [github.com/corgi-kx/logcustom](https://github.com/corgi-kx/logcustom)| 日志输出工具
 
-
-
-
+ <hr>
  
-
- <br>
- 
-**程序运行教程：**
+### 程序运行教程：
 
 **1.下载后编译**
 
@@ -223,12 +207,14 @@ network:
 tail -f log9000.txt 
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118144251486.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)
+
 **5.同步区块**
 
 节点2,节点3依次修改配置文件的端口号为9001,9002,启动这两个节点来同步创世区块
 这时节点1的日志监测到网络中存在的其他节点
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118145703154.png)节点2,节点3 启动后会自动同步创世区块
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118145752942.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)
+
 **6.进行转帐操作**
 
 每个节点设置挖矿奖励地址(也可以不设置,不设置的情况下,节点挖到矿后不会产生奖励)
@@ -253,6 +239,7 @@ tail -f log9000.txt
 已执行转帐命令
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/2019111815314125.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)
+
 **7.查看余额**
 
 三个节点中,由节点2挖到区块,里所应当节点2获得挖矿奖励25Tokens
