@@ -135,7 +135,7 @@
 
 **3.修改配置文件**
   
-  主要修改本地监听ip，本地监听端口。其他的默认即可
+  主要修改本地监听ip，本地监听端口。其他的默认即可</br>
   不建议调小难度阀值，避免产生区块分叉情况，demo暂未对区块分叉做处理
 ```shell
  vi config.yaml
@@ -206,7 +206,7 @@ network:
 
 **5.同步区块**
 
-节点2,节点3依次修改配置文件的端口号为9001,9002,启动这两个节点来同步创世区块
+节点2,节点3依次修改配置文件的端口号为9001,9002,启动这两个节点来同步创世区块</br>
 这时节点1的日志监测到网络中存在的其他节点
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118145703154.png)节点2,节点3 启动后会自动同步创世区块
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118145752942.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)
@@ -215,7 +215,7 @@ network:
 
 **6.进行转帐操作**
 
-每个节点设置挖矿奖励地址(也可以不设置,不设置的情况下,节点挖到矿后不会产生奖励)
+每个节点设置挖矿奖励地址(也可以不设置,不设置的情况下,节点挖到矿后不会产生奖励)</br>
 节点1设置挖矿奖励地址:
 ```
 > setRewardAddr -a 12BwtcVWimms9rrKxxoCev68woGyMYS4sk
@@ -261,9 +261,9 @@ network:
 
 区块1为创世区块,只有赋予`12BwtcVWimms9rrKxxoCev68woGyMYS4sk`的100UTXO输出
 
-可以看到区块2:
-第一笔交易,地址`12BwtcVWimms9rrKxxoCev68woGyMYS4sk`先花掉创世区块额度为100的UTXO,给自身生成一个90UTXO,给地址`1B6KYdABXZDwq8xGTbdDknpHBo11CkihxS` 生成10UTXO .
-第二笔交易地址`12BwtcVWimms9rrKxxoCev68woGyMYS4sk`使用第一笔交易输出的90额度的UTXO,给自身生成一个80UTXO 以及给地址`1E6aRBxfncAsypUnjGxPJYbR4JQ3gZ6hHD` 生成10UTXO
+可以看到区块2:</br>
+第一笔交易,地址`12BwtcVWimms9rrKxxoCev68woGyMYS4sk`先花掉创世区块额度为100的UTXO,给自身生成一个90UTXO,给地址`1B6KYdABXZDwq8xGTbdDknpHBo11CkihxS` 生成10UTXO</br>
+第二笔交易地址`12BwtcVWimms9rrKxxoCev68woGyMYS4sk`使用第一笔交易输出的90额度的UTXO,给自身生成一个80UTXO 以及给地址`1E6aRBxfncAsypUnjGxPJYbR4JQ3gZ6hHD` 生成10UTXO</br>
 第三笔交易为挖矿奖励交易,所以只有输出,没有输入,给地址`1B6KYdABXZDwq8xGTbdDknpHBo11CkihxS` 生成25UTXO(在配置文件中设置的25奖励额度)
 
 ```
