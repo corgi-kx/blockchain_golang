@@ -4,7 +4,7 @@
 >**&ensp;&ensp;&ensp;邮箱:mikesen1994@gmail.com   &ensp;&ensp;&ensp;&ensp;  &ensp;&ensp; &ensp;&ensp; vx:965952482**
 
 <br>
-&ensp;&ensp;&ensp;本程序是模仿比特币的运行逻辑所编写的区块链公链demo,主要应用到了密码学,共识算法,对等网络,区块链防篡改结构等相关知识.并把各个知识点结合到一起,打造成了简单完善的可运行公链demo
+&ensp;&ensp;&ensp;本程序是模仿比特币的功能所编写的区块链公链demo,主要应用到了密码学,共识算法,对等网络,区块链防篡改结构等相关知识.并把各个知识点结合到一起,编写成了简单完善的可运行公链demo
 
 <br>
 
@@ -65,14 +65,20 @@
 
 	
 > 曾经有个疑问，为何比特币生成地址要这么麻烦，既然非对称加密只拥有公钥是无法倒推出私钥的，为何不直接使用公钥当地址，而是对公钥进行hash多次来取得地址，直到最近看了篇文章才明白，该文章提到量子计算机是可以破解椭圆曲线加密的，其可以通过公钥快速寻找到私钥信息。但是量子计算机很难逆转Hash算法(或者说需要2的80次方个步骤来破解Hash)，所以你的比特币放在一个未支付过的地址中(根据UTXO交易模型，输出存的是公钥Hash而不是公钥,这同样解释了为何UTXO输入存的是公钥而输出存的是公钥Hash)是相当安全的。也就是说已有花费的地址在面对量子计算机面前是不安全的，没有花费的地址有较强的抗量子性。
+
 <br>
+
 ######  区块生成、验证
 &ensp;&ensp;&ensp;  基于POW共识算法生成区块，首先根据难度值（可在配置文件里定义）来定义挖矿难度（一串大数），通过调用go自身的随机数包crypto/rand来不断的变换随机数nonce(上个版本用的nonce值自身累加的方法,但是分叉的概率太大)，不断哈希区块自身来使最终计算出来的区块自身hash值小于当前定义的挖矿难度则获得出块权利。
 &ensp;&ensp;&ensp;  出块节点可获得奖励代币并拥有记账权，出块后像全网进行广播。其余P2P节点收到区块后首先对区块自身hash进行验证，其次检验区块里的prehash与本地的前区块hash是否一致，最后存入本地数据库中。
+
 <br>
+
 ######  数据持久化模块
 &ensp;&ensp;&ensp; 持久化层基于KV型数据库blot多封装了一层,主要接口为put、view、delete。每次调用接口会单独打开、关闭数据库的句柄，所以不会出现被其他线程占用的情况。数据库分别建立了三个表 BlockBucket（用于存放区块的详细信息）、AddrBucket（用于存放本地钱包数据）、UTXOBucket（用于存放未消费UTXO数据）
+
 <br>
+
 ######  P2P网络通讯模块
 &ensp;&ensp;&ensp;  使用适合局域网寻址的mdns技术，由于所使用的包在windows下存在找不到网络的bug，所以本程序建议在linux/mac下运行。
 &ensp;&ensp;&ensp; 节点启动后会自动在局域网中寻找其他对等节点，发现后会存放在节点池中（存于内存），节点之间相互通讯的数据前十二个字节默认为命令，根据命令不同来对本地的区块链相关信息进行反馈
@@ -129,7 +135,8 @@
 **程序运行教程：**
 
 **1.下载后编译**
- 本demo建议在linux/mac下运行，否则会出现助记词乱码，找不到对等网络的问题
+
+本demo建议在linux/mac下运行，否则会出现助记词乱码，找不到对等网络的问题
 
 ```shell
 git clone https://github.com/corgi-kx/blockchain_golang.git
@@ -139,12 +146,14 @@ git clone https://github.com/corgi-kx/blockchain_golang.git
 ```
 
 **2.打开多个窗口**
+
 为了简化操作，在同一台电脑中启动不同端口来模拟P2P节点（三个窗口用于启动程序，三个窗口用于实时查看日志）
 >实机操作时，如果出现找不到其他节点情况可能是防火墙问题，请关闭防火墙后在试
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118103707708.png)
 
 **3.修改配置文件**
+  
   主要修改本地监听ip，本地监听端口。其他的默认即可
   不建议调小难度阀值，避免产生区块分叉情况，demo暂未对区块分叉做处理
 ```shell
@@ -174,6 +183,7 @@ network:
 
 ```
 **4.启动节点,创建钱包,生成创世区块**
+
 启动节点1
 ```shell
 ./chain
@@ -205,11 +215,15 @@ network:
 ```shell
 tail -f log9000.txt 
 ```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118144251486.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)**5.同步区块**
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118144251486.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)
+**5.同步区块**
+
 节点2,节点3依次修改配置文件的端口号为9001,9002,启动这两个节点来同步创世区块
 这时节点1的日志监测到网络中存在的其他节点
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118145703154.png)节点2,节点3 启动后会自动同步创世区块
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118145752942.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)**6.进行转帐操作**
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118145752942.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)
+**6.进行转帐操作**
+
 每个节点设置挖矿奖励地址(也可以不设置,不设置的情况下,节点挖到矿后不会产生奖励)
 节点1设置挖矿奖励地址:
 ```
@@ -231,7 +245,9 @@ tail -f log9000.txt
 > transfer -from ["12BwtcVWimms9rrKxxoCev68woGyMYS4sk","12BwtcVWimms9rrKxxoCev68woGyMYS4sk"] -to ["1B6KYdABXZDwq8xGTbdDknpHBo11CkihxS","1E6aRBxfncAsypUnjGxPJYbR4JQ3gZ6hHD"] -amount [10,10]
 已执行转帐命令
 ```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/2019111815314125.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)**7.查看余额**
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2019111815314125.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)
+**7.查看余额**
+
 三个节点中,由节点2挖到区块,里所应当节点2获得挖矿奖励25Tokens
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118153547470.png)此时在任意节点敲入`getBalance`查看余额命令,可以查看三个地址的余额信息
 ```
@@ -243,6 +259,7 @@ tail -f log9000.txt
 地址:1E6aRBxfncAsypUnjGxPJYbR4JQ3gZ6hHD的余额为：10
 ```
 **8.查看区块详细信息**
+
 任意节点输入`printAllBlock`命令查看区块信息
 
 区块1为创世区块,只有赋予`12BwtcVWimms9rrKxxoCev68woGyMYS4sk`的100UTXO输出
@@ -321,6 +338,7 @@ tail -f log9000.txt
 
 ```
 **9.其他**
+
 你也可以在节点2,节点3发起转帐,不过首先需要通过助记词导入钱包信息`importMnword -m`
 
 更多功能请自行发掘 :)
