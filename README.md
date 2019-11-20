@@ -129,7 +129,7 @@
 本demo建议在linux/mac下运行，否则会出现助记词乱码，找不到对等网络的问题
 
 ```shell
-git clone https://github.com/corgi-kx/blockchain_golang.git
+ git clone https://github.com/corgi-kx/blockchain_golang.git
 ```
 ```shell
  go build -mod=vendor -o chain main.go
@@ -182,7 +182,7 @@ network:
 
 启动节点1
 ```shell
-./chain
+ ./chain
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118101305498.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)
 
@@ -210,7 +210,7 @@ network:
 
 日志1实时查看日志(可以看到挖矿过程)
 ```shell
-tail -f log9000.txt 
+ tail -f log9000.txt 
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20191118144251486.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1OTExMTg0,size_16,color_FFFFFF,t_70)
 
