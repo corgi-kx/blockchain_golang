@@ -14,8 +14,8 @@ network:
   listen_host: "192.168.0.164"
   #本地监听端口
   listen_port: "9002"
-  #节点组唯一标识名称(名称不同会找不到网络)
+  #节点组唯一标识名称(如果节点间名称不同会找不到网络)
   rendezvous_string: "meetme"
-  #网络传输流的协议id(名称不同发送不了数据)
+  #网络传输流的协议id(如果节点间id不同发送不了数据)
   protocol_id: "/chain/1.1.0"
 

@@ -71,7 +71,6 @@ func handleTransaction(content []byte) {
 		}
 	}
 
-
 	if len(t.Ts) == 0 {
 		return
 	}

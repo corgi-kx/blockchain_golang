@@ -16,15 +16,12 @@ var (
 var tradePool = Transactions{}
 //交易池默认大小
 var TradePoolLength = 2
-
 //版本信息 默认0
 const versionInfo = byte(0x00)
-
 //发送数据的头部多少位为命令
 const prefixCMDLength = 12
 
 type command string
-
 //网络通讯互相发送的命令
 const (
 	cVersion     command = "version"

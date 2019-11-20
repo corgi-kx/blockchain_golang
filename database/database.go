@@ -29,7 +29,7 @@ func New( ) *BlockchainDB {
 	return bd
 }
 
-
+//判断数据库是否存在
 func IsBlotExist(nodeID string) bool {
 	var DBFileName = "blockchain_" + nodeID + ".db"
 	_, err := os.Stat(DBFileName)

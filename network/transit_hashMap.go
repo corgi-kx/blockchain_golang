@@ -13,7 +13,6 @@ type hash struct {
 	AddrFrom string
 }
 
-
 func (v hash) serialize() []byte {
 	var result bytes.Buffer
 	encoder := gob.NewEncoder(&result)

@@ -9,7 +9,6 @@ import (
 	log "github.com/corgi-kx/logcustom"
 	"math/big"
 	"os"
-
 	"time"
 )
 
