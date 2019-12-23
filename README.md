@@ -1,7 +1,8 @@
   <br>
 
 
->**&ensp;&ensp;&ensp;邮箱:mikesen1994@gmail.com   &ensp;&ensp;&ensp;&ensp;  &ensp;&ensp; &ensp;&ensp; vx:965952482**
+>**&ensp;&ensp;&ensp;建了个QQ群：722124200     有问题可以加群互相讨论   ：）** \
+>**&ensp;&ensp;&ensp;邮箱:mikesen1994@gmail.com  &ensp;&ensp;&ensp; vx:965952482**
 
 <br>
 &ensp;&ensp;&ensp;本程序是模仿比特币的功能所编写的区块链公链demo,主要应用到了密码学,共识算法,对等网络,区块链防篡改结构等相关知识,并把各个知识点结合到一起,编写成了简单完善的可运行公链demo
