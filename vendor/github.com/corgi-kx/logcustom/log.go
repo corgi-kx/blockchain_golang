@@ -66,7 +66,7 @@ func SetOutput(w io.Writer, t logType) {
 //SetOutputAll设置全部日志级别输出到目标位置
 //传入文件的句柄（或者实现了io.Writer接口的对象）与日志级别，则全部日志级别的日志将会输出到指定的文件或位置
 func SetOutputAll(w io.Writer) {
-	for i, _ := range loggers {
+	for i := range loggers {
 		loggers[i].SetOutput(w)
 	}
 }

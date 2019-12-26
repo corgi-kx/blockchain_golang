@@ -7,5 +7,5 @@ import (
 
 func (cli *Cli) genesis(address string, value int) {
 	bc := block.NewBlockchain()
-	bc.CreataGenesisTransaction(address, value,network.Send{})
+	bc.CreataGenesisTransaction(address, value, network.Send{})
 }

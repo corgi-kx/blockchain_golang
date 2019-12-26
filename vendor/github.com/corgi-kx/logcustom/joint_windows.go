@@ -15,7 +15,7 @@ func joint(prefix, message string, color colorType) string {
 	filename, funcname, line := getpProcInfo()
 	s := fmt.Sprint(prefix, ": ", now, " ", filename, ":", line, ":", funcname, ": ", message)
 	//如果是windows系统彩色打印，需要调试kernel32.dll文件
-	if isColor  {
+	if isColor {
 		winKernelOpen(color)
 	}
 	return s
@@ -32,14 +32,14 @@ func (l mylog) joint(prefix, message string, color colorType) string {
 }
 
 //传入颜色代码，windows系统开启彩色打印
-func winKernelOpen (color colorType) {
+func winKernelOpen(color colorType) {
 	kernel32 := syscall.NewLazyDLL("kernel32.dll")
 	proc := kernel32.NewProc("SetConsoleTextAttribute")
 	proc.Call(uintptr(syscall.Stdout), uintptr(color))
 }
 
 //windows系统关闭彩色打印
-func winKernelColse () {
+func winKernelColse() {
 	kernel32 := syscall.NewLazyDLL("kernel32.dll")
 	proc := kernel32.NewProc("SetConsoleTextAttribute")
 	handle, _, _ := proc.Call(uintptr(syscall.Stdout), uintptr(7))

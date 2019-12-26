@@ -59,7 +59,7 @@ func handleTransaction(content []byte) {
 	//判断当前交易池中是否已有该地址发起的交易
 	if len(tradePool.Ts) != 0 {
 	circle:
-		for i, _ := range t.Ts {
+		for i := range t.Ts {
 			for _, v := range tradePool.Ts {
 				if bytes.Equal(t.Ts[i].Vint[0].PublicKey, v.Vint[0].PublicKey) {
 					s := fmt.Sprintf("当前交易池里，已存在此笔地址转账信息(%s)，顾暂不能进行转账，请等待上笔交易出块后在进行此地址转账操作", blc.GetAddressFromPublicKey(t.Ts[i].Vint[0].PublicKey))
@@ -79,7 +79,8 @@ func handleTransaction(content []byte) {
 
 //调用区块模块进行挖矿操作
 var lock = sync.Mutex{}
-func mineBlock( t Transactions) {
+
+func mineBlock(t Transactions) {
 	//锁上,等待上一个挖矿结束后才进行挖矿!
 	lock.Lock()
 	defer lock.Unlock()
@@ -104,7 +105,7 @@ func mineBlock( t Transactions) {
 			}
 			//将network下的transaction转换为blc下的transaction
 			nTs := make([]blc.Transaction, len(mineTrans.Ts))
-			for i, _ := range mineTrans.Ts {
+			for i := range mineTrans.Ts {
 				nTs[i].TxHash = mineTrans.Ts[i].TxHash
 				nTs[i].Vint = mineTrans.Ts[i].Vint
 				nTs[i].Vout = mineTrans.Ts[i].Vout
@@ -112,8 +113,8 @@ func mineBlock( t Transactions) {
 			//进行转帐挖矿
 			bc.Transfer(nTs, send)
 			//剔除已打包进区块的交易
-			newTrans:=[]Transaction{}
-			newTrans = append(newTrans,tradePool.Ts[TradePoolLength:]...)
+			newTrans := []Transaction{}
+			newTrans = append(newTrans, tradePool.Ts[TradePoolLength:]...)
 			tradePool.Ts = newTrans
 		} else {
 			log.Infof("当前交易池数量:%d，交易池未满%d，暂不进行挖矿操作", len(tradePool.Ts), TradePoolLength)
@@ -133,7 +134,7 @@ func handleBlock(content []byte) {
 	if pow.Verify() {
 		log.Infof("POW验证通过,该区块高度为：%d", block.Height)
 		//如果是创世区块则直接添加进本地库
-		currentHash:=bc.GetBlockHashByHeight(block.Height)
+		currentHash := bc.GetBlockHashByHeight(block.Height)
 		if block.Height == 1 && currentHash == nil {
 			bc.AddBlock(block)
 			utxos := blc.UTXOHandle{bc}
@@ -141,28 +142,28 @@ func handleBlock(content []byte) {
 			log.Info("创世区块验证通过,已存入本地数据库...")
 		}
 		//验证上一个区块的hash与本块中prehash是否一致
-		lastBlockHash:=bc.GetBlockHashByHeight(block.Height - 1 )
-		if lastBlockHash == nil{
+		lastBlockHash := bc.GetBlockHashByHeight(block.Height - 1)
+		if lastBlockHash == nil {
 			//如果找不到上一个区块,可能是还未同步,建立个循环等待同步
 			for {
 				time.Sleep(time.Second)
-				lastBlockHash =bc.GetBlockHashByHeight(block.Height - 1 )
+				lastBlockHash = bc.GetBlockHashByHeight(block.Height - 1)
 				if lastBlockHash != nil {
-					log.Debugf("区块高度%d尚未同步,等待同步...",block.Height - 1 )
+					log.Debugf("区块高度%d尚未同步,等待同步...", block.Height-1)
 					break
 				}
 			}
 		}
 		//如果上一块的hash等于本块prehash则通过存入本地库
-		if bytes.Equal(lastBlockHash,block.PreHash) {
+		if bytes.Equal(lastBlockHash, block.PreHash) {
 			bc.AddBlock(block)
 			utxos := blc.UTXOHandle{bc}
 			//重置utxo数据库
 			utxos.ResetUTXODataBase()
 			log.Infof("prehash验证通过,该区块高度为:%d,", block.Height)
-			log.Infof("总验证通过已存入本地库,区块高度%d,哈希%x",block.Height,block.Hash)
-		}else {
-			log.Infof("上一个块高度为%d的hash值为:%x,与本块中的prehash值:%x不一致,固不存入区块链中", block.Height - 1,lastBlockHash,block.Hash)
+			log.Infof("总验证通过已存入本地库,区块高度%d,哈希%x", block.Height, block.Hash)
+		} else {
+			log.Infof("上一个块高度为%d的hash值为:%x,与本块中的prehash值:%x不一致,固不存入区块链中", block.Height-1, lastBlockHash, block.Hash)
 		}
 	} else {
 		log.Errorf("POW验证不通过，无法将此块：%x加入数据库", block.Hash)

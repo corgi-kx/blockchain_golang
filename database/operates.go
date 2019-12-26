@@ -11,7 +11,7 @@ import (
 
 //存入数据
 func (bd *BlockchainDB) Put(k, v []byte, bt BucketType) {
-	var DBFileName = "blockchain_" + ListenPort+ ".db"
+	var DBFileName = "blockchain_" + ListenPort + ".db"
 	db, err := bolt.Open(DBFileName, 0600, nil)
 	defer db.Close()
 	if err != nil {
@@ -62,8 +62,8 @@ func (bd *BlockchainDB) View(k []byte, bt BucketType) []byte {
 		return nil
 	}
 	//不再次赋值的话，返回值会报错，不知道狗日的啥意思
-	realResult:=make([]byte,len(result))
-	copy(realResult,result)
+	realResult := make([]byte, len(result))
+	copy(realResult, result)
 	return realResult
 }
 

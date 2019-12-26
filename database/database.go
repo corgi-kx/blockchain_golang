@@ -24,8 +24,8 @@ type BlockchainDB struct {
 	ListenPort string
 }
 
-func New( ) *BlockchainDB {
-	bd := &BlockchainDB{ ListenPort}
+func New() *BlockchainDB {
+	bd := &BlockchainDB{ListenPort}
 	return bd
 }
 

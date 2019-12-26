@@ -286,7 +286,7 @@ func (c *client) query(params *QueryParam) error {
 			// Check if this entry is complete
 			if inp.complete() {
 				copyInp := *inp // copy inp because we send it into another thread
-				                // which can cause data race
+				// which can cause data race
 				select {
 				case params.Entries <- &copyInp:
 				default:

@@ -7,8 +7,8 @@ import (
 )
 
 type version struct {
-	Version byte
-	Height int
+	Version  byte
+	Height   int
 	AddrFrom string
 }
 
@@ -23,12 +23,10 @@ func (v version) serialize() []byte {
 	return result.Bytes()
 }
 
-func  (v *version) deserialize(d []byte){
+func (v *version) deserialize(d []byte) {
 	decoder := gob.NewDecoder(bytes.NewReader(d))
 	err := decoder.Decode(v)
 	if err != nil {
 		log.Panic(err)
 	}
 }
-
-

@@ -109,7 +109,6 @@ func Fatal(v ...interface{}) {
 	falat.Fatalln(message)
 }
 
-
 //Fatal级别的打印信息，第一个参数输入格式,第二个参数输入要打印的内容
 // 输出错误信息后，直接执行os.exit(1)中断程序
 func Fatalf(format string, v ...interface{}) {

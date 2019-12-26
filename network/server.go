@@ -49,7 +49,7 @@ func StartNode(clier Clier) {
 	//写入全局变量本地主机信息
 	localHost = host
 	//写入全局变量本地P2P节点地址详细信息
-	localAddr = fmt.Sprintf( "/ip4/%s/tcp/%s/p2p/%s", ListenHost, ListenPort, host.ID().Pretty())
+	localAddr = fmt.Sprintf("/ip4/%s/tcp/%s/p2p/%s", ListenHost, ListenPort, host.ID().Pretty())
 	log.Infof("[*] 你的P2P地址信息: %s", localAddr)
 	//启动监听本地端口，并且传入一个处理流的函数，当本地节点接收到流的时候回调处理流的函数
 	host.SetStreamHandler(protocol.ID(ProtocolID), handleStream)
@@ -80,14 +80,14 @@ func monitorP2PNodes() {
 	currentPeerPoolNum := 0
 	for {
 		peerPoolNum := len(peerPool)
-		if  peerPoolNum != currentPeerPoolNum && peerPoolNum != 0{
+		if peerPoolNum != currentPeerPoolNum && peerPoolNum != 0 {
 			log.Info("----------------------检测到网络中P2P节点变动,当前节点池存在的节点------------------")
-			for _,v := range peerPool {
-				log.Info("|   ",v,"   |")
+			for _, v := range peerPool {
+				log.Info("|   ", v, "   |")
 			}
 			log.Info("----------------------------------------------------------------------------------")
 			currentPeerPoolNum = peerPoolNum
-		}else if peerPoolNum != currentPeerPoolNum && peerPoolNum == 0 {
+		} else if peerPoolNum != currentPeerPoolNum && peerPoolNum == 0 {
 			log.Info("-------------------检测到网络中P2P节点变动,当前网络中已不存在其他P2P节点-------------------------")
 			currentPeerPoolNum = peerPoolNum
 		}
@@ -102,7 +102,7 @@ func sendVersionToPeers() {
 		if len(peerPool) == 0 {
 			time.Sleep(time.Second)
 			continue
-		}else {
+		} else {
 			break
 		}
 	}
@@ -111,7 +111,7 @@ func sendVersionToPeers() {
 
 //节点退出信号处理
 func signalHandle() {
-	sigs := make(chan os.Signal,1)
+	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	<-sigs
 	send.SendSignOutToPeers()

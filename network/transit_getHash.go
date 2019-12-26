@@ -7,7 +7,7 @@ import (
 )
 
 type getHash struct {
-	Height int
+	Height   int
 	AddrFrom string
 }
 
@@ -22,7 +22,7 @@ func (v getHash) serialize() []byte {
 	return result.Bytes()
 }
 
-func  (v *getHash) deserialize(d []byte){
+func (v *getHash) deserialize(d []byte) {
 	decoder := gob.NewDecoder(bytes.NewReader(d))
 	err := decoder.Decode(v)
 	if err != nil {

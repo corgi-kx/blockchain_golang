@@ -9,7 +9,7 @@ type blockchainIterator struct {
 }
 
 //获取区块迭代器实例
-func  NewBlockchainIterator(bc *blockchain) *blockchainIterator {
+func NewBlockchainIterator(bc *blockchain) *blockchainIterator {
 	blockchainIterator := &blockchainIterator{bc.BD.View([]byte(LastBlockHashMapping), database.BlockBucket), bc.BD}
 	return blockchainIterator
 }
@@ -20,7 +20,7 @@ func (bi *blockchainIterator) Next() *Block {
 	if len(currentByte) == 0 {
 		return nil
 	}
-	block:=Block{}
+	block := Block{}
 	block.Deserialize(currentByte)
 	bi.CurrentBlockHash = block.PreHash
 	return &block

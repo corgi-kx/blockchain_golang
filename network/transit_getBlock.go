@@ -8,7 +8,7 @@ import (
 
 type getBlock struct {
 	BlockHash []byte
-	AddrFrom string
+	AddrFrom  string
 }
 
 func (v getBlock) serialize() []byte {
@@ -22,7 +22,7 @@ func (v getBlock) serialize() []byte {
 	return result.Bytes()
 }
 
-func  (v *getBlock) deserialize(d []byte){
+func (v *getBlock) deserialize(d []byte) {
 	decoder := gob.NewDecoder(bytes.NewReader(d))
 	err := decoder.Decode(v)
 	if err != nil {

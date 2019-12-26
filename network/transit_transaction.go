@@ -32,7 +32,7 @@ func (t *Transactions) Serialize() []byte {
 	return result.Bytes()
 }
 
-func  (v *Transactions) Deserialize(d []byte){
+func (v *Transactions) Deserialize(d []byte) {
 	decoder := gob.NewDecoder(bytes.NewReader(d))
 	err := decoder.Decode(v)
 	if err != nil {

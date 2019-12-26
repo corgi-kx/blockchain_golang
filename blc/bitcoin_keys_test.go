@@ -14,8 +14,8 @@ func TestGetBitcoinKeys(t *testing.T) {
 	{
 		keys := NewBitcoinKeys([]string{})
 		address := keys.getAddress()
-		t.Log("\t地址为：",string(address))
-		t.Log("\t地址格式是否正确：",IsVaildBitcoinAddress(string(address)))
+		t.Log("\t地址为：", string(address))
+		t.Log("\t地址格式是否正确：", IsVaildBitcoinAddress(string(address)))
 	}
 }
 
@@ -36,7 +36,6 @@ func TestSign(t *testing.T) {
 	}
 }
 
-
 func TestMnemonicWord(t *testing.T) {
 	t.Log("测试中文助记词")
 	{
@@ -48,12 +47,12 @@ func TestMnemonicWord(t *testing.T) {
 }
 
 func TestReadTxt(t *testing.T) {
-	file,err:=os.Open("D:/programming/golang/GOPATH/src/github.com/corgi-kx/blockchain_golang/blc/chinese_mnemonic_world.txt")
+	file, err := os.Open("D:/programming/golang/GOPATH/src/github.com/corgi-kx/blockchain_golang/blc/chinese_mnemonic_world.txt")
 	if err != nil {
 		t.Error(err)
 	}
-	b:=make([]byte,6)
-	file.ReadAt(b,3)
+	b := make([]byte, 6)
+	file.ReadAt(b, 3)
 	println(string(b))
 	//s:=[]string{}
 	//设置助记词文件为utf-8 一个中文两个字节

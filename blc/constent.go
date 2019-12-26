@@ -3,6 +3,7 @@ package block
 import (
 	"math"
 )
+
 //当前节点发现的网络中最新区块高度
 var NewestBlockHeight int
 

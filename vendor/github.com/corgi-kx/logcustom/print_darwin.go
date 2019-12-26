@@ -17,6 +17,7 @@ func Tracef(format string, v ...interface{}) {
 	message := joint(lTrace, s, colorGreen)
 	trace.Println(message)
 }
+
 //Info级别的打印信息，输入要打印的内容，会自动换行
 func Info(v ...interface{}) {
 	info := loggers[Levelinfo]
@@ -24,6 +25,7 @@ func Info(v ...interface{}) {
 	message := joint(lInfo, s, colorBlue)
 	info.Println(message)
 }
+
 //Infof级别的打印信息，第一个参数输入格式,第二个参数输入要打印的内容，类似fmt.Printf
 func Infof(format string, v ...interface{}) {
 	info := loggers[Levelinfo]
@@ -31,6 +33,7 @@ func Infof(format string, v ...interface{}) {
 	message := joint(lInfo, s, colorBlue)
 	info.Println(message)
 }
+
 //Debug级别的打印信息，输入要打印的内容，会自动换行
 func Debug(v ...interface{}) {
 	debug := loggers[Leveldebug]
@@ -38,6 +41,7 @@ func Debug(v ...interface{}) {
 	message := joint(lDebug, s, colorDarkblue)
 	debug.Println(message)
 }
+
 //Debug级别的打印信息，第一个参数输入格式,第二个参数输入要打印的内容，类似fmt.Printf
 func Debugf(format string, v ...interface{}) {
 	debug := loggers[Leveldebug]
@@ -45,6 +49,7 @@ func Debugf(format string, v ...interface{}) {
 	message := joint(lDebug, s, colorDarkblue)
 	debug.Println(message)
 }
+
 //Warn级别的打印信息，输入要打印的内容，会自动换行
 func Warn(v ...interface{}) {
 	warn := loggers[Levelwarn]
@@ -52,6 +57,7 @@ func Warn(v ...interface{}) {
 	message := joint(lWarn, s, colorYellow)
 	warn.Println(message)
 }
+
 //Warn级别的打印信息，第一个参数输入格式,第二个参数输入要打印的内容，类似fmt.Printf
 func Warnf(format string, v ...interface{}) {
 	warn := loggers[Levelwarn]
@@ -59,6 +65,7 @@ func Warnf(format string, v ...interface{}) {
 	message := joint(lWarn, s, colorYellow)
 	warn.Println(message)
 }
+
 //Error级别的打印信息，输入要打印的内容，会自动换行
 func Error(v ...interface{}) {
 	e := loggers[Levelerror]

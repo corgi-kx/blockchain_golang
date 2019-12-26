@@ -193,7 +193,7 @@ func IsVaildBitcoinAddress(address string) bool {
 //通过公钥信息获得地址
 func GetAddressFromPublicKey(publickey []byte) string {
 	if publickey == nil {
-		return  ""
+		return ""
 	}
 	b := bitcoinKeys{PublicKey: publickey}
 	return string(b.getAddress())

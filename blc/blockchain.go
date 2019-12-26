@@ -286,7 +286,7 @@ func (bc *blockchain) Transfer(tss []Transaction, send Sender) {
 func (bc *blockchain) VerifyTransBalance(tss *[]Transaction) {
 	//获取每个地址的UTXO余额，并存入字典中
 	var balance = map[string]int{}
-	for i, _ := range *tss {
+	for i := range *tss {
 		fromAddress := GetAddressFromPublicKey((*tss)[i].Vint[0].PublicKey)
 		//获取数据库中的utxo
 		u := UTXOHandle{bc}
@@ -303,7 +303,7 @@ func (bc *blockchain) VerifyTransBalance(tss *[]Transaction) {
 	}
 
 circle:
-	for i, _ := range *tss {
+	for i := range *tss {
 		fromAddress := GetAddressFromPublicKey((*tss)[i].Vint[0].PublicKey)
 		u := UTXOHandle{bc}
 		utxos := u.findUTXOFromAddress(fromAddress)
@@ -379,9 +379,9 @@ func (bc *blockchain) AddBlock(block *Block) {
 
 //对交易信息进行数字签名
 func (bc *blockchain) signatureTransactions(tss []Transaction, wallets *wallets) {
-	for i, _ := range tss {
+	for i := range tss {
 		copyTs := tss[i].customCopy()
-		for index, _ := range tss[i].Vint {
+		for index := range tss[i].Vint {
 			//获取地址
 			bk := bitcoinKeys{nil, tss[i].Vint[index].PublicKey, nil}
 			address := bk.getAddress()
@@ -406,7 +406,7 @@ func (bc *blockchain) signatureTransactions(tss []Transaction, wallets *wallets)
 //数字签名验证
 func (bc *blockchain) verifyTransactionsSign(tss *[]Transaction) {
 circle:
-	for i, _ := range *tss {
+	for i := range *tss {
 		copyTs := (*tss)[i].customCopy()
 		for index, Vin := range (*tss)[i].Vint {
 			findTs, err := bc.findTransaction(*tss, Vin.TxHash)

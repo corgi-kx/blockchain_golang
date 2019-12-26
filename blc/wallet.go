@@ -19,13 +19,14 @@ func (a *addressList) serliazle() []byte {
 	return result.Bytes()
 }
 
-func  (v *addressList) Deserialize(d []byte){
+func (v *addressList) Deserialize(d []byte) {
 	decoder := gob.NewDecoder(bytes.NewReader(d))
 	err := decoder.Decode(v)
 	if err != nil {
 		log.Panic(err)
 	}
 }
+
 type wallets struct {
 	Wallets map[string]*bitcoinKeys
 }
@@ -40,7 +41,7 @@ func NewWallets(bd *database.BlockchainDB) *wallets {
 			return w
 		}
 		for _, v := range *addressList {
-			keys:=bitcoinKeys{}
+			keys := bitcoinKeys{}
 			keys.Deserialize(bd.View(v, database.AddrBucket))
 			w.Wallets[string(v)] = &keys
 		}
@@ -50,7 +51,7 @@ func NewWallets(bd *database.BlockchainDB) *wallets {
 }
 
 //生成钱包
-func (w *wallets) GenerateWallet(bd *database.BlockchainDB,keys func(s []string) *bitcoinKeys,s []string) (address, privKey, mnemonicWord string) {
+func (w *wallets) GenerateWallet(bd *database.BlockchainDB, keys func(s []string) *bitcoinKeys, s []string) (address, privKey, mnemonicWord string) {
 	bitcoinKeys := keys(s)
 	if bitcoinKeys == nil {
 		log.Fatal("创建钱包失败，检查助记词是否符合创建规则！")
@@ -63,11 +64,11 @@ func (w *wallets) GenerateWallet(bd *database.BlockchainDB,keys func(s []string)
 	//将助记词拼接成json格式并返回
 	mnemonicWord = "["
 	for i, v := range bitcoinKeys.MnemonicWord {
-		mnemonicWord += "\"" +v + "\""
-		if i != len(bitcoinKeys.MnemonicWord) -1 {
-			mnemonicWord +=","
-		}else  {
-			mnemonicWord +="]"
+		mnemonicWord += "\"" + v + "\""
+		if i != len(bitcoinKeys.MnemonicWord)-1 {
+			mnemonicWord += ","
+		} else {
+			mnemonicWord += "]"
 		}
 	}
 	return
@@ -75,7 +76,7 @@ func (w *wallets) GenerateWallet(bd *database.BlockchainDB,keys func(s []string)
 
 //将钱包信息存入数据库
 func (w *wallets) storage(address []byte, keys *bitcoinKeys, bd *database.BlockchainDB) {
-	b:=bd.View(address, database.AddrBucket)
+	b := bd.View(address, database.AddrBucket)
 	if len(b) != 0 {
 		log.Warn("钱包早已存在于数据库中！")
 		return
@@ -89,7 +90,7 @@ func (w *wallets) storage(address []byte, keys *bitcoinKeys, bd *database.Blockc
 		a := addressList{address}
 		bd.Put([]byte(addrListMapping), a.serliazle(), database.AddrBucket)
 	} else {
-		addressList:=addressList{}
+		addressList := addressList{}
 		addressList.Deserialize(listBytes)
 		addressList = append(addressList, address)
 		bd.Put([]byte(addrListMapping), addressList.serliazle(), database.AddrBucket)
@@ -102,12 +103,7 @@ func GetAllAddress(bd *database.BlockchainDB) *addressList {
 	if len(listBytes) == 0 {
 		return nil
 	}
-	addressList:=addressList{}
+	addressList := addressList{}
 	addressList.Deserialize(listBytes)
 	return &addressList
 }
-
-
-
-
-

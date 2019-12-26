@@ -7,7 +7,7 @@ import (
 )
 
 type myerror struct {
-	Error string
+	Error    string
 	Addrfrom string
 }
 
@@ -22,7 +22,7 @@ func (v myerror) serialize() []byte {
 	return result.Bytes()
 }
 
-func  (v *myerror) deserialize(d []byte){
+func (v *myerror) deserialize(d []byte) {
 	decoder := gob.NewDecoder(bytes.NewReader(d))
 	err := decoder.Decode(v)
 	if err != nil {

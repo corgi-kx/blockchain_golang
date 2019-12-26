@@ -6,7 +6,7 @@ import (
 	log "github.com/corgi-kx/logcustom"
 )
 
-type hashMap  map[int][]byte
+type hashMap map[int][]byte
 
 type hash struct {
 	HashMap  hashMap
@@ -24,7 +24,7 @@ func (v hash) serialize() []byte {
 	return result.Bytes()
 }
 
-func  (v *hash) deserialize(d []byte){
+func (v *hash) deserialize(d []byte) {
 	decoder := gob.NewDecoder(bytes.NewReader(d))
 	err := decoder.Decode(v)
 	if err != nil {

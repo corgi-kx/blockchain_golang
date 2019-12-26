@@ -166,7 +166,7 @@ func Setup(procname string, config SetupConfig) error {
 			sigchan := make(chan os.Signal)
 			signal.Notify(sigchan, sigHUP)
 			go func() {
-				for _ = range sigchan {
+				for range sigchan {
 					hh.OnHup()
 				}
 			}()
