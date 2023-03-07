@@ -199,7 +199,7 @@ func (p *process) doClose() {
 
 	// We won't add any children after we start closing so we can do this
 	// once.
-	for plc := range p.children {
+	for plc, _ := range p.children {
 		child := plc.Child()
 		if child != nil { // check because child may already have been removed.
 			go child.Close() // force all children to shut down
@@ -217,7 +217,7 @@ func (p *process) doClose() {
 		// change under our feet.
 		wf := p.waitfors
 		p.waitfors = nil // clear them. release memory.
-		for w := range wf {
+		for w, _ := range wf {
 			// Here, we wait UNLOCKED, so that waitfors who are in the middle of
 			// adding a child to us can finish. we will immediately close the child.
 			p.Unlock()
@@ -270,7 +270,7 @@ func (p *process) CloseAfterChildren() error {
 	nextToWaitFor := func() Process {
 		p.Lock()
 		defer p.Unlock()
-		for e := range p.waitfors {
+		for e, _ := range p.waitfors {
 			c := e.Child()
 			if c == nil {
 				continue

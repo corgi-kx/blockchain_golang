@@ -11,7 +11,7 @@ require (
 	github.com/libp2p/go-libp2p-core v0.2.4
 	github.com/libp2p/go-libp2p-peerstore v0.1.4 // indirect
 	github.com/libp2p/go-libp2p-secio v0.2.1 // indirect
-	github.com/miekg/dns v1.1.22 // indirect
+	github.com/miekg/dns v1.1.25 // indirect
 	github.com/multiformats/go-multiaddr v0.1.1
 	github.com/multiformats/go-multiaddr-dns v0.2.0 // indirect
 	github.com/spf13/viper v1.5.0

@@ -58,7 +58,7 @@ func NewAddrBook() pstore.AddrBook {
 
 	ab := &memoryAddrBook{
 		segments: func() (ret addrSegments) {
-			for i := range ret {
+			for i, _ := range ret {
 				ret[i] = &addrSegment{addrs: make(map[peer.ID]map[string]*expiringAddr)}
 			}
 			return ret
@@ -117,7 +117,7 @@ func (mab *memoryAddrBook) PeersWithAddrs() peer.IDSlice {
 	var pids peer.IDSlice
 	for _, s := range mab.segments {
 		s.RLock()
-		for pid := range s.addrs {
+		for pid, _ := range s.addrs {
 			pids = append(pids, pid)
 		}
 		s.RUnlock()
