@@ -417,7 +417,7 @@ func (s *Swarm) ClosePeer(p peer.ID) error {
 		}
 
 		var errs []string
-		for range conns {
+		for _ = range conns {
 			err := <-errCh
 			if err != nil {
 				errs = append(errs, err.Error())
